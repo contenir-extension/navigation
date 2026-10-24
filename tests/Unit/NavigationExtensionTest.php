@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 
 use function array_map;
 use function dirname;
+use function is_file;
 
 #[Group('unit')]
 final class NavigationExtensionTest extends TestCase
@@ -60,6 +61,18 @@ final class NavigationExtensionTest extends TestCase
                 static fn(HandlerDeclaration $handler): ?string => $handler->privilege?->value,
                 self::registration()->handlers,
             ),
+        );
+    }
+
+    #[Test]
+    public function shipsTheMenuTreesScriptBuiltInItsAssets(): void
+    {
+        $module = self::registration()->module;
+        $tree   = $module?->components[0] ?? null;
+
+        static::assertSame(
+            ['[data-navtree]', 'js/MenuTree.js', true],
+            [$tree?->selector, $tree?->script, is_file("{$module?->assets}/{$tree?->script}")],
         );
     }
 }

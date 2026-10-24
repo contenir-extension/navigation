@@ -90,7 +90,10 @@ $menu = $values['menu'];
                             </div>
                         </div>
 <?php else: ?>
-                        <?= $view->render('navigation/tree', ['menu' => $menu['id'], 'rows' => $menu['tree']]) ?>
+                        <div data-navtree-root>
+                            <div data-navtree-token hidden><?= $view->token() ?></div>
+                            <?= $view->render('navigation/tree', ['menu' => $menu['id'], 'parent' => null, 'rows' => $menu['tree']]) ?>
+                        </div>
 <?php endif ?>
                     </div>
                     <div class="card__footer card__footer--between">

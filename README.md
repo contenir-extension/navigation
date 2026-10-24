@@ -33,4 +33,7 @@ Approve, so a role can work on a menu's draft without making it live.
 ```bash
 composer check   # format, lint, guard, static analysis, both suites and mutation testing
 composer boundary
+npm ci
+npm run test:coverage
+npm run build    # the menu tree's script, into public/js, which is committed
 ```
