@@ -61,12 +61,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/contenir/contenir-extension-api.git",
-                "reference": "574b1cf2e6127fcca548d25224c05cd0d61d7b43"
+                "reference": "69b0eea0bf859a2e25908c9c1f07983238cd1728"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contenir/contenir-extension-api/zipball/574b1cf2e6127fcca548d25224c05cd0d61d7b43",
-                "reference": "574b1cf2e6127fcca548d25224c05cd0d61d7b43",
+                "url": "https://api.github.com/repos/contenir/contenir-extension-api/zipball/69b0eea0bf859a2e25908c9c1f07983238cd1728",
+                "reference": "69b0eea0bf859a2e25908c9c1f07983238cd1728",
                 "shasum": ""
             },
             "require": {
@@ -126,7 +126,7 @@
                 "issues": "https://github.com/contenir/contenir-extension-api/issues",
                 "source": "https://github.com/contenir/contenir-extension-api"
             },
-            "time": "2026-10-24T08:20:32+00:00"
+            "time": "2026-10-24T11:01:54+00:00"
         },
         {
             "name": "contenir/contenir-navigation",
