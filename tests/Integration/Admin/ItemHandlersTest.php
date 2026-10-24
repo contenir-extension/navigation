@@ -23,7 +23,10 @@ use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
+use function array_flip;
+use function array_intersect_key;
 use function array_map;
+use function array_values;
 use function trim;
 
 #[Group('integration')]
@@ -34,6 +37,22 @@ final class ItemHandlersTest extends TestCase
 
     private int $menu;
 
+    /**
+     * What the link field posts for a new page at $path.
+     *
+     * @return array<string, string>
+     */
+    private static function newPage(string $path): array
+    {
+        return [
+            'kind'     => 'new',
+            'section'  => 'page',
+            'title'    => 'Our story',
+            'path'     => $path,
+            'workflow' => 'standard',
+        ];
+    }
+
     #[Test]
     public function addingAnAddressAMenuCannotHoldSaysWhy(): void
     {
@@ -41,9 +60,8 @@ final class ItemHandlersTest extends TestCase
             ItemAddHandler::class,
             ['menu' => $this->menu],
             [
-                'links_to' => 'url',
-                'url'      => 'javascript:alert(1)',
-                'label'    => 'x',
+                'link'  => ['kind' => 'address', 'address' => 'javascript:alert(1)'],
+                'label' => 'x',
             ],
         );
 
@@ -56,37 +74,31 @@ final class ItemHandlersTest extends TestCase
         $result = $this->answer(
             ItemAddHandler::class,
             ['menu' => $this->menu],
-            ['links_to' => 'url', 'url' => 'hello@example.com'],
+            ['link' => ['kind' => 'address', 'address' => 'hello@example.com']],
         );
 
         static::assertSame(
-            ['A URL item links to an address alone, with a label', 'hello@example.com', []],
-            [$result->messages[0]['text'] ?? null, $this->field($result, 'url')?->default, $this->tree()],
+            ['A URL item links to an address alone, with a label', 'address:hello@example.com', []],
+            [$result->messages[0]['text'] ?? null, $this->field($result, 'link')?->default, $this->tree()],
         );
     }
 
     #[Test]
-    public function addingAnItemOffersTheRecordsAndTheItemsItCanGoUnder(): void
+    public function addingAnItemOffersCreateNewUnderItsParentsPageAndTheItemsItCanGoUnder(): void
     {
-        $shop   = $this->item($this->menu, Item::text('Shop'));
-        $result = $this->answer(ItemAddHandler::class, ['menu' => $this->menu, 'parent' => (int) $shop->id]);
+        $about  = $this->item($this->menu, Item::record(new RecordTarget('page', 1)));
+        $result = $this->answer(ItemAddHandler::class, ['menu' => $this->menu, 'parent' => (int) $about->id]);
 
         static::assertSame(
             [
-                [
-                    'page:1' => 'Page: About us (/about)',
-                    'page:2' => 'Page: Our team (/about/our-team)',
-                    'news:7' => 'News article: Launch (/news/launch)',
-                ],
-                ['' => 'The top of the menu', '1' => '— Shop'],
+                ['create' => true, 'prefix' => '/about'],
+                ['' => 'The top of the menu', '1' => '— page 1'],
                 '1',
-                'record',
             ],
             [
-                $this->field($result, 'record')?->options,
+                $this->field($result, 'link')?->attributes,
                 $this->field($result, 'parent')?->options,
                 $this->field($result, 'parent')?->default,
-                $this->field($result, 'links_to')?->default,
             ],
         );
     }
@@ -101,8 +113,7 @@ final class ItemHandlersTest extends TestCase
             ItemAddHandler::class,
             ['menu' => $this->menu],
             [
-                'links_to' => 'record',
-                'record'   => 'page:1',
+                'link'     => ['kind' => 'record', 'record' => 'page:1'],
                 'fragment' => '#staff',
                 'parent'   => (string) $shop->id,
             ],
@@ -133,10 +144,60 @@ final class ItemHandlersTest extends TestCase
         $result = $this->answer(
             ItemAddHandler::class,
             ['menu' => $this->menu],
-            ['links_to' => 'text', 'label' => 'Shop', 'parent' => '99'],
+            ['label' => 'Shop', 'parent' => '99'],
         );
 
         static::assertSame('There is no menu item 99', $result->messages[0]['text'] ?? null);
+    }
+
+    #[Test]
+    public function addingAnItemUnderTextStartsNewPagesAtTheTop(): void
+    {
+        $shop   = $this->item($this->menu, Item::text('Shop'));
+        $result = $this->answer(ItemAddHandler::class, ['menu' => $this->menu, 'parent' => (int) $shop->id]);
+
+        static::assertSame(['create' => true, 'prefix' => ''], $this->field($result, 'link')?->attributes);
+    }
+
+    #[Test]
+    public function addingAnItemWithANewPageMakesTheDraftUnderItsParentsPageAndLinksToIt(): void
+    {
+        $about  = $this->item($this->menu, Item::record(new RecordTarget('page', 1)));
+        $result = $this->answer(
+            ItemAddHandler::class,
+            ['menu' => $this->menu],
+            [
+                'link'   => self::newPage('/about/our-story'),
+                'parent' => (string) $about->id,
+            ],
+        );
+
+        static::assertSame(
+            [
+                'Item added to the draft.',
+                [['page 1', [['page 3', []]]]],
+                ['Our story', '/about/our-story', 'draft', 'standard', '1'],
+            ],
+            [
+                $result->messages[0]['text'] ?? null,
+                $this->tree(),
+                array_values(array_intersect_key(
+                    $this->host->stored('page', 3) ?? [],
+                    array_flip(['title', 'path', 'status', 'workflow', 'parent']),
+                )),
+            ],
+        );
+    }
+
+    #[Test]
+    public function addingAnItemWithANewPageTheSiteRefusesSaysWhyAndAddsNothing(): void
+    {
+        $result = $this->answer(ItemAddHandler::class, ['menu' => $this->menu], ['link' => self::newPage('/about')]);
+
+        static::assertSame(
+            ['Some fields need attention That path is already in use', []],
+            [$result->messages[0]['text'] ?? null, $this->tree()],
+        );
     }
 
     #[Test]
@@ -145,10 +206,10 @@ final class ItemHandlersTest extends TestCase
         $result = $this->answer(
             ItemAddHandler::class,
             ['menu' => $this->menu],
-            ['links_to' => 'record', 'record' => ''],
+            ['link' => ['kind' => 'record', 'record' => '']],
         );
 
-        static::assertSame('Choose the page or record the item links to', $result->messages[0]['text'] ?? null);
+        static::assertSame('Choose the page or record to link to', $result->messages[0]['text'] ?? null);
     }
 
     #[Test]
@@ -158,9 +219,8 @@ final class ItemHandlersTest extends TestCase
             ItemAddHandler::class,
             ['menu' => $this->menu],
             [
-                'links_to' => 'text',
-                'label'    => 'Hours',
-                'html'     => '<strong>Open</strong><script>x</script>',
+                'label' => 'Hours',
+                'html'  => '<strong>Open</strong><script>x</script>',
             ],
         );
 
@@ -211,15 +271,14 @@ final class ItemHandlersTest extends TestCase
             ItemEditHandler::class,
             ['item' => (int) $shop->id],
             [
-                'links_to' => 'url',
-                'url'      => 'https://shop.example.com',
-                'label'    => 'Shop',
-                'parent'   => '',
-                'display'  => 'icon_label',
-                'icon'     => 'cart',
-                'new_tab'  => '1',
-                'class'    => 'nav__shop',
-                'active'   => '1',
+                'link'    => ['kind' => 'address', 'address' => 'https://shop.example.com'],
+                'label'   => 'Shop',
+                'parent'  => '',
+                'display' => 'icon_label',
+                'icon'    => 'cart',
+                'new_tab' => '1',
+                'class'   => 'nav__shop',
+                'active'  => '1',
             ],
         );
         $saved = $this->menus()->repository->item((int) $shop->id);
@@ -249,6 +308,16 @@ final class ItemHandlersTest extends TestCase
     }
 
     #[Test]
+    public function editingAnItemOffersCreateNewUnderItsParentsPage(): void
+    {
+        $about  = $this->item($this->menu, Item::record(new RecordTarget('page', 1)));
+        $team   = $this->item($this->menu, Item::text('Team'), $about->id);
+        $result = $this->answer(ItemEditHandler::class, ['item' => (int) $team->id]);
+
+        static::assertSame(['create' => true, 'prefix' => '/about'], $this->field($result, 'link')?->attributes);
+    }
+
+    #[Test]
     public function editingAnItemShowsItsValuesAndLeavesItselfOutOfWhereItCanGo(): void
     {
         $shop = $this->item(
@@ -269,13 +338,12 @@ final class ItemHandlersTest extends TestCase
 
         static::assertSame(
             [
-                ['record', 'page:1', 'Team', 'staff', 'icon', 'people', true, 'x', false],
+                ['record:page:1', 'Team', 'staff', 'icon', 'people', true, 'x', false],
                 ['' => 'The top of the menu', '3' => '— News'],
             ],
             [
                 array_map(fn(string $name): mixed => $this->field($result, $name)?->default, [
-                    'links_to',
-                    'record',
+                    'link',
                     'label',
                     'fragment',
                     'display',
@@ -300,12 +368,12 @@ final class ItemHandlersTest extends TestCase
                 $this->answer(
                     ItemEditHandler::class,
                     ['item' => (int) $shop->id],
-                    ['links_to' => 'url', 'url' => 'data:x', 'label' => 'Shop'],
+                    ['link' => ['kind' => 'address', 'address' => 'data:x'], 'label' => 'Shop'],
                 )->messages[0]['text'] ?? null,
                 $this->answer(
                     ItemEditHandler::class,
                     ['item' => (int) $shop->id],
-                    ['links_to' => 'text', 'label' => 'Shop', 'parent' => '99', 'active' => '1'],
+                    ['label' => 'Shop', 'parent' => '99', 'active' => '1'],
                 )->messages[0]['text'] ?? null,
             ],
         );
@@ -319,10 +387,9 @@ final class ItemHandlersTest extends TestCase
             ItemEditHandler::class,
             ['item' => (int) $shop->id],
             [
-                'links_to' => 'text',
-                'label'    => 'Shop',
-                'display'  => 'icon',
-                'active'   => '1',
+                'label'   => 'Shop',
+                'display' => 'icon',
+                'active'  => '1',
             ],
         );
 
@@ -342,6 +409,30 @@ final class ItemHandlersTest extends TestCase
     }
 
     #[Test]
+    public function editingAnItemToLinkToANewPageMakesItAndLinksToIt(): void
+    {
+        $shop   = $this->item($this->menu, Item::text('Shop'));
+        $result = $this->answer(
+            ItemEditHandler::class,
+            ['item' => (int) $shop->id],
+            [
+                'link'   => self::newPage('/shop'),
+                'label'  => 'Shop',
+                'active' => '1',
+            ],
+        );
+
+        static::assertSame(
+            ['Item saved to the draft.', [['Shop', []]], 'page:3'],
+            [
+                $result->messages[0]['text'] ?? null,
+                $this->tree(),
+                $this->linkedTo((int) $shop->id),
+            ],
+        );
+    }
+
+    #[Test]
     public function editingAnItemToSitUnderAnotherPutsItLastThere(): void
     {
         $shop = $this->item($this->menu, Item::text('Shop'));
@@ -352,10 +443,9 @@ final class ItemHandlersTest extends TestCase
             ItemEditHandler::class,
             ['item' => (int) $news->id],
             [
-                'links_to' => 'text',
-                'label'    => 'News',
-                'parent'   => (string) $shop->id,
-                'active'   => '1',
+                'label'  => 'News',
+                'parent' => (string) $shop->id,
+                'active' => '1',
             ],
         );
 
@@ -371,14 +461,41 @@ final class ItemHandlersTest extends TestCase
             ItemEditHandler::class,
             ['item' => (int) $shop->id],
             [
-                'links_to' => 'text',
-                'label'    => 'Shop',
-                'new_tab'  => '1',
-                'active'   => '1',
+                'label'   => 'Shop',
+                'new_tab' => '1',
+                'active'  => '1',
             ],
         );
 
         static::assertNull($this->menus()->repository->item((int) $shop->id)->target);
+    }
+
+    #[Test]
+    public function editingAnItemWithALinkLeftIncompleteOrAPageTheSiteRefusesSaysWhy(): void
+    {
+        $shop = $this->item($this->menu, Item::text('Shop'));
+
+        static::assertSame(
+            ['Choose the page or record to link to', 'Some fields need attention That path is already in use'],
+            [
+                $this->answer(
+                    ItemEditHandler::class,
+                    ['item' => (int) $shop->id],
+                    [
+                        'link'  => ['kind' => 'record', 'record' => ''],
+                        'label' => 'Shop',
+                    ],
+                )->messages[0]['text'] ?? null,
+                $this->answer(
+                    ItemEditHandler::class,
+                    ['item' => (int) $shop->id],
+                    [
+                        'link'  => self::newPage('/about'),
+                        'label' => 'Shop',
+                    ],
+                )->messages[0]['text'] ?? null,
+            ],
+        );
     }
 
     #[Test]
@@ -486,6 +603,16 @@ final class ItemHandlersTest extends TestCase
     private function field(HandlerResult $result, string $name): ?Field
     {
         return $result->screen?->form?->field($name);
+    }
+
+    /**
+     * The record the item with $id links to, as "<section>:<id>".
+     */
+    private function linkedTo(int $id): string
+    {
+        $record = $this->menus()->repository->item($id)->record;
+
+        return "{$record?->section}:{$record?->id}";
     }
 
     /**

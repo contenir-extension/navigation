@@ -16,8 +16,6 @@ use function array_slice;
 #[Group('unit')]
 final class ItemFormTest extends TestCase
 {
-    private const array RECORDS = ['page:1' => 'Page: About us'];
-
     private const array PARENTS = ['' => 'The top of the menu'];
 
     /**
@@ -42,29 +40,27 @@ final class ItemFormTest extends TestCase
     {
         static::assertSame(
             [
-                ['links_to', 'radio',    true,  'record'],
-                ['record',   'select',   false, null],
-                ['url',      'text',     false, null],
+                ['link',     'link',     false, null],
                 ['label',    'text',     false, null],
                 ['fragment', 'text',     false, null],
                 ['html',     'textarea', false, null],
                 ['parent',   'select',   false, ''],
             ],
-            self::fields(ItemForm::adding(self::RECORDS, self::PARENTS)->fields),
+            self::fields(ItemForm::adding(self::PARENTS)->fields),
         );
     }
 
     #[Test]
     public function aNewItemShowsWhatWasPosted(): void
     {
-        $form = ItemForm::adding(self::RECORDS, self::PARENTS, [
-            'links_to' => 'text',
-            'label'    => 'Shop',
-            'parent'   => '3',
+        $form = ItemForm::adding(self::PARENTS, [
+            'link'   => 'address:/shop',
+            'label'  => 'Shop',
+            'parent' => '3',
         ]);
 
-        static::assertSame(['text', 'Shop', '3'], [
-            $form->field('links_to')?->default,
+        static::assertSame(['address:/shop', 'Shop', '3'], [
+            $form->field('link')?->default,
             $form->field('label')?->default,
             $form->field('parent')?->default,
         ]);
@@ -81,14 +77,14 @@ final class ItemFormTest extends TestCase
                 ['class',   'text',     false, null],
                 ['active',  'checkbox', false, true],
             ],
-            self::fields(array_slice(ItemForm::editing(self::RECORDS, self::PARENTS, [])->fields, offset: 7)),
+            self::fields(array_slice(ItemForm::editing(self::PARENTS, [], true, '/about')->fields, offset: 5)),
         );
     }
 
     #[Test]
     public function anItemThatExistsShowsItsDrawing(): void
     {
-        $form = ItemForm::editing(self::RECORDS, self::PARENTS, [
+        $form = ItemForm::editing(self::PARENTS, [
             'display' => 'icon',
             'new_tab' => true,
             'active'  => false,
@@ -106,24 +102,19 @@ final class ItemFormTest extends TestCase
     }
 
     #[Test]
-    public function withoutRecordsAnItemLinksToAnAddressOrNothing(): void
+    public function theLinkOffersCreateNewUnderThePathGivenWhenAsked(): void
     {
-        $form = ItemForm::adding([], self::PARENTS);
-
         static::assertSame(
-            [ItemForm::WITHOUT_RECORDS, 'url', null],
-            [$form->field('links_to')?->options, $form->field('links_to')?->default, $form->field('record')],
+            [
+                ['create' => true, 'prefix' => '/about'],
+                ['create' => false, 'prefix' => ''],
+                ['create' => false, 'prefix' => ''],
+            ],
+            [
+                ItemForm::adding(self::PARENTS, [], true, '/about')->field('link')?->attributes,
+                ItemForm::adding(self::PARENTS)->field('link')?->attributes,
+                ItemForm::editing(self::PARENTS, [])->field('link')?->attributes,
+            ],
         );
-    }
-
-    #[Test]
-    public function withRecordsAnItemCanLinkToAnyOfThem(): void
-    {
-        $form = ItemForm::adding(self::RECORDS, self::PARENTS);
-
-        static::assertSame([ItemForm::LINKS_TO, self::RECORDS], [
-            $form->field('links_to')?->options,
-            $form->field('record')?->options,
-        ]);
     }
 }

@@ -6,6 +6,7 @@ namespace Contenir\Extension\Navigation\Admin;
 
 use Contenir\Extension\Api\Context\ExtensionContextInterface;
 use Contenir\Extension\Api\Exception\InvalidDeclarationException;
+use Contenir\Extension\Api\Exception\LinkRejectedException;
 use Contenir\Extension\Api\Form\Form;
 use Contenir\Extension\Api\Handler\HandlerInterface;
 use Contenir\Extension\Api\Handler\HandlerResult;
@@ -58,27 +59,40 @@ final class ItemAddHandler implements HandlerInterface
             return HandlerResult::redirect(Urls::menu(null))->withMessage('warning', 'That menu no longer exists.');
         }
 
-        $items   = $menus->repository->items((int) $menu->id);
-        $records = ItemChoices::records($menus->records);
-        $parents = ItemChoices::parents($items);
-        if ('POST' !== $request->getMethod()) {
-            return self::screen($menu, ItemForm::adding($records, $parents, [
-                'parent' => (string) $input->id('parent'),
-            ]));
-        }
-
+        $items  = $menus->repository->items((int) $menu->id);
         $posted = new ItemInput($input);
         $parent = $posted->parent();
+        $under  = Placement::item($items, $parent);
+        $form   = /** @param array<string, scalar|null> $values */ static fn(array $values): Form => ItemForm::adding(
+            ItemChoices::parents($items),
+            $values,
+            null !== $menus->records,
+            NewPage::prefix($menus->records, $under),
+        );
+        if ('POST' !== $request->getMethod()) {
+            return self::screen($menu, $form(['parent' => (string) $parent]));
+        }
 
         try {
-            $item = $posted->item()->withPlacement(
-                (int) $menu->id,
-                $parent,
-                Placement::last($items, $parent),
+            $menus->transaction->run(
+                /**
+                 * @throws InvalidItemException
+                 * @throws InvalidLinkException
+                 * @throws LinkRejectedException
+                 * @throws NotFoundException
+                 * @throws PageRefusedException
+                 * @throws StorageException
+                 */
+                static function () use ($menus, $menu, $posted, $parent, $under, $items): void {
+                    $item = $posted->item(null, NewPage::made($menus->records, $posted->link(), $under))
+                        ->withPlacement((int) $menu->id, $parent, Placement::last($items, $parent));
+                    $menus->repository->saveItem($item);
+                },
             );
-            $menus->repository->saveItem($item);
-        } catch (InvalidItemException|InvalidLinkException|NotFoundException $problem) {
-            return self::screen($menu, ItemForm::adding($records, $parents, ItemValues::posted($input)))
+        } catch (
+            InvalidItemException|InvalidLinkException|LinkRejectedException|NotFoundException|PageRefusedException $problem
+        ) {
+            return self::screen($menu, $form(ItemValues::posted($input)))
                 ->withMessage('danger', $problem->getMessage());
         }
 

@@ -11,36 +11,12 @@ use Contenir\Extension\Api\Form\Form;
 use Contenir\Navigation\Menu\Display;
 
 /**
- * A menu item as a described form: what it links to, its label and where it
- * sits, and, once it exists, how it is drawn.
+ * A menu item as a described form: what it links to, chosen in the host's
+ * link picker, its label and where it sits, and, once it exists, how it is
+ * drawn. An item that links to nothing is text only.
  */
 final class ItemForm
 {
-    public const string LINKS_TO_RECORD = 'record';
-
-    public const string LINKS_TO_URL = 'url';
-
-    public const string LINKS_TO_NOTHING = 'text';
-
-    /**
-     * @var array<string, string>
-     */
-    public const array LINKS_TO = [
-        self::LINKS_TO_RECORD  => 'A page or other record',
-        self::LINKS_TO_URL     => 'An address',
-        self::LINKS_TO_NOTHING => 'Nothing: text only',
-    ];
-
-    /**
-     * What an item can link to when the host lends no records.
-     *
-     * @var array<string, string>
-     */
-    public const array WITHOUT_RECORDS = [
-        self::LINKS_TO_URL     => 'An address',
-        self::LINKS_TO_NOTHING => 'Nothing: text only',
-    ];
-
     /**
      * @var array<string, string>
      */
@@ -53,32 +29,35 @@ final class ItemForm
     /**
      * The form for a new item.
      *
-     * @param array<string, string>     $records Choices of record, by "<section>:<id>"
-     * @param array<string, string>     $parents Choices of parent, by id, "" for the top of the menu
+     * @param array<string, string>      $parents Choices of parent, by id, "" for the top of the menu
      * @param array<string, scalar|null> $values
+     * @param ?string                    $prefix  The path a new page's suggested path starts with
      *
      * @throws InvalidDeclarationException Never: the fields are fixed.
      */
-    public static function adding(array $records, array $parents, array $values = []): Form
-    {
-        return new Form(self::linkFields($records, $parents, $values));
+    public static function adding(
+        array $parents,
+        array $values = [],
+        bool $create = false,
+        ?string $prefix = null,
+    ): Form {
+        return new Form(self::linkFields($parents, $values, $create, $prefix));
     }
 
     /**
      * The form for an item that exists, with how it is drawn.
      *
-     * @param array<string, string>     $records Choices of record, by "<section>:<id>"
-     * @param array<string, string>     $parents Choices of parent, by id, "" for the top of the menu
+     * @param array<string, string>      $parents Choices of parent, by id, "" for the top of the menu
      * @param array<string, scalar|null> $values
      *
      * @throws InvalidDeclarationException Never: the fields are fixed.
      */
-    public static function editing(array $records, array $parents, array $values): Form
+    public static function editing(array $parents, array $values, bool $create = false, ?string $prefix = null): Form
     {
         $value = static fn(string $name): string|int|float|bool|null => $values[$name] ?? null;
 
         return new Form([
-            ...self::linkFields($records, $parents, $values),
+            ...self::linkFields($parents, $values, $create, $prefix),
             new Field(
                 'display',
                 'Show',
@@ -110,7 +89,6 @@ final class ItemForm
     }
 
     /**
-     * @param array<string, string>      $records
      * @param array<string, string>      $parents
      * @param array<string, scalar|null> $values
      *
@@ -118,35 +96,18 @@ final class ItemForm
      *
      * @throws InvalidDeclarationException Never: the fields are fixed.
      */
-    private static function linkFields(array $records, array $parents, array $values): array
+    private static function linkFields(array $parents, array $values, bool $create, ?string $prefix): array
     {
         $value = static fn(string $name): string|int|float|bool|null => $values[$name] ?? null;
 
         return [
             new Field(
-                'links_to',
+                'link',
                 'Links to',
-                FieldType::Radio,
-                required: true,
-                default: $value('links_to') ?? ([] === $records ? self::LINKS_TO_URL : self::LINKS_TO_RECORD),
-                options: [] === $records ? self::WITHOUT_RECORDS : self::LINKS_TO,
-            ),
-            ...(
-                [] === $records
-                    ? []
-                    : [new Field(
-                        'record',
-                        'Page or record',
-                        FieldType::Select,
-                        default: $value('record'),
-                        options: $records,
-                    )]
-            ),
-            new Field(
-                'url',
-                'Address',
-                description: 'A page on this site such as /contact, a full link, a spot on the page such as #booking, an email address or a phone number.',
-                default: $value('url'),
+                FieldType::Link,
+                'A page or other record, or an address. Leave it empty for text only.',
+                default: $value('link'),
+                attributes: ['create' => $create, 'prefix' => (string) $prefix],
             ),
             new Field(
                 'label',

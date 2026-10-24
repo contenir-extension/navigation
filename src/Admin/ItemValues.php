@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Contenir\Extension\Navigation\Admin;
 
+use Contenir\Extension\Api\Exception\LinkRejectedException;
+use Contenir\Extension\Api\Form\Link;
+use Contenir\Extension\Api\Url\RecordReference;
 use Contenir\Navigation\Menu\Item;
-use Contenir\Navigation\Menu\ItemKind;
 
 /**
  * The values an item's form shows: an item's own, or what was posted when
@@ -19,13 +21,7 @@ final class ItemValues
     public static function of(Item $item): array
     {
         return [
-            'links_to' => match ($item->kind) {
-                ItemKind::Record => ItemForm::LINKS_TO_RECORD,
-                ItemKind::Url    => ItemForm::LINKS_TO_URL,
-                ItemKind::Text   => ItemForm::LINKS_TO_NOTHING,
-            },
-            'record'   => null === $item->record ? null : "{$item->record->section}:{$item->record->id}",
-            'url'      => $item->url?->display(),
+            'link'     => self::link($item)?->encode(),
             'label'    => $item->label,
             'fragment' => $item->fragment,
             'html'     => $item->html,
@@ -45,9 +41,6 @@ final class ItemValues
     {
         $values = [];
         foreach ([
-            'links_to',
-            'record',
-            'url',
             'label',
             'fragment',
             'html',
@@ -59,6 +52,29 @@ final class ItemValues
             $values[$name] = $input->posted($name);
         }
 
-        return [...$values, 'new_tab' => $input->checked('new_tab'), 'active' => $input->checked('active')];
+        try {
+            $link = Link::fromPosted($input->raw('link'))?->encode();
+        } catch (LinkRejectedException) {
+            $link = null;
+        }
+
+        return [
+            ...$values,
+            'link'    => $link,
+            'new_tab' => $input->checked('new_tab'),
+            'active'  => $input->checked('active'),
+        ];
+    }
+
+    /**
+     * What an item links to as its link field holds it, or null for text.
+     */
+    private static function link(Item $item): ?Link
+    {
+        if (null !== $item->record) {
+            return Link::record(new RecordReference($item->record->section, $item->record->id));
+        }
+
+        return null === $item->url ? null : Link::address($item->url->display());
     }
 }

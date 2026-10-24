@@ -6,6 +6,7 @@ namespace Contenir\Extension\Navigation\Tests\Unit\Admin;
 
 use Contenir\Extension\Navigation\Admin\Placement;
 use Contenir\Navigation\Menu\Item;
+use Contenir\Navigation\Menu\ItemKind;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -27,6 +28,18 @@ final class PlacementTest extends TestCase
             Placement::last($items, null),
             Placement::last($items, 1),
             Placement::last($items, 9),
+        ]);
+    }
+
+    #[Test]
+    public function findsTheParentAmongTheItemsAndNoneForTheTopOrOneThatIsGone(): void
+    {
+        $items = [new Item(ItemKind::Text, label: 'Shop', id: 1), new Item(ItemKind::Text, label: 'Sale', id: 2)];
+
+        static::assertSame(['Sale', null, null], [
+            Placement::item($items, 2)?->label,
+            Placement::item($items, null),
+            Placement::item($items, 9),
         ]);
     }
 }
