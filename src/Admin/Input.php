@@ -74,6 +74,15 @@ final readonly class Input
     }
 
     /**
+     * A posted value as it was posted, such as a link field's parts, or null
+     * when it wasn't.
+     */
+    public function raw(string $name): mixed
+    {
+        return $this->posted[$name] ?? null;
+    }
+
+    /**
      * @param array<array-key, mixed> $values
      */
     private function text(array $values, string $name): string

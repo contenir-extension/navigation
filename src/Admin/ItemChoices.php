@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Contenir\Extension\Navigation\Admin;
 
-use Contenir\Extension\Api\Record\RecordsInterface;
 use Contenir\Navigation\Menu\Family;
 use Contenir\Navigation\Menu\Item;
 use Contenir\Navigation\Menu\Node;
@@ -15,16 +14,10 @@ use function sprintf;
 use function str_repeat;
 
 /**
- * The choices an item's form offers: the records it can link to, and the
- * items it can sit under.
+ * The items an item's form offers to put it under.
  */
 final readonly class ItemChoices
 {
-    /**
-     * The most records the form lists; the link picker searches the rest.
-     */
-    public const int RECORDS = 500;
-
     /**
      * The choice for an item at the top of its menu.
      */
@@ -43,39 +36,6 @@ final readonly class ItemChoices
         $excluded = null === $moving ? [] : [$moving, ...Family::descendants($items, $moving)];
 
         return [self::TOP => 'The top of the menu'] + self::indented(Tree::build($items), $excluded, 0);
-    }
-
-    /**
-     * Every record in the site's linkable sections, by "<section>:<id>",
-     * labelled with its section, title and path; none when the host lends no
-     * records.
-     *
-     * @return array<string, string>
-     */
-    public static function records(?RecordsInterface $records): array
-    {
-        if (null === $records) {
-            return [];
-        }
-
-        $titles = [];
-        foreach ($records->sections() as $section) {
-            $titles[$section->section] = $section->title;
-        }
-
-        $choices = [];
-        foreach ($records->search('', limit: self::RECORDS) as $summary) {
-            $label = sprintf(
-                '%s: %s',
-                $titles[$summary->record->section] ?? $summary->record->section,
-                $summary->title,
-            );
-            $choices["{$summary->record->section}:{$summary->record->id}"] = null === $summary->path
-                ? $label
-                : "{$label} ({$summary->path})";
-        }
-
-        return $choices;
     }
 
     /**

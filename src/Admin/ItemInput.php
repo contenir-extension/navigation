@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Contenir\Extension\Navigation\Admin;
 
+use Contenir\Extension\Api\Exception\LinkRejectedException;
+use Contenir\Extension\Api\Form\Link;
 use Contenir\Navigation\Exception\InvalidItemException;
 use Contenir\Navigation\Exception\InvalidLinkException;
 use Contenir\Navigation\Link\RecordTarget;
@@ -11,9 +13,6 @@ use Contenir\Navigation\Link\Url;
 use Contenir\Navigation\Menu\Display;
 use Contenir\Navigation\Menu\Item;
 use Contenir\Navigation\Menu\ItemKind;
-
-use function strpos;
-use function substr;
 
 /**
  * The item what was posted describes, read from an item's form.
@@ -26,19 +25,16 @@ final readonly class ItemInput
 
     /**
      * What the item links to and its label, kept from $item where it is
-     * drawn and placed.
+     * drawn and placed. A page the link field asked for is linked to as
+     * $created, once the handler has made it.
      *
-     * @throws InvalidItemException When the item breaks one of its rules.
-     * @throws InvalidLinkException When the address can't be held.
+     * @throws InvalidItemException  When the item breaks one of its rules.
+     * @throws InvalidLinkException  When the address can't be held.
+     * @throws LinkRejectedException When the link field's choice is incomplete.
      */
-    public function item(?Item $item = null): Item
+    public function item(?Item $item = null, ?RecordTarget $created = null): Item
     {
-        $label = $this->input->postedOrNull('label');
-        $made  = match ($this->input->posted('links_to')) {
-            ItemForm::LINKS_TO_RECORD  => Item::record($this->record(), $this->input->postedOrNull('fragment'), $label),
-            ItemForm::LINKS_TO_NOTHING => Item::text((string) $label, $this->input->postedOrNull('html')),
-            default                    => Item::url(Url::parse($this->input->posted('url')), (string) $label),
-        };
+        $made = $this->made($this->link(), $created);
 
         return null === $item
             ? $made
@@ -60,6 +56,17 @@ final readonly class ItemInput
                 $item->sequence,
                 $item->created,
             );
+    }
+
+    /**
+     * What the link field chose: a record, an address, a page to create, or
+     * null for text only.
+     *
+     * @throws LinkRejectedException When the choice is incomplete.
+     */
+    public function link(): ?Link
+    {
+        return Link::fromPosted($this->input->raw('link'));
     }
 
     /**
@@ -88,16 +95,26 @@ final readonly class ItemInput
     }
 
     /**
-     * @throws InvalidItemException When no record was chosen.
+     * @throws InvalidItemException When the item breaks one of its rules.
+     * @throws InvalidLinkException When the address can't be held.
      */
-    private function record(): RecordTarget
+    private function made(?Link $link, ?RecordTarget $created): Item
     {
-        $choice = $this->input->posted('record');
-        $colon  = strpos($choice, needle: ':');
-        if (false === $colon) {
-            throw InvalidItemException::because('Choose the page or record the item links to');
+        $label    = $this->input->postedOrNull('label');
+        $fragment = $this->input->postedOrNull('fragment');
+        $record   = $link?->record;
+        if (null !== $record) {
+            return Item::record(new RecordTarget($record->section, $record->id), $fragment, $label);
         }
 
-        return new RecordTarget(substr($choice, offset: 0, length: $colon), substr($choice, $colon + 1));
+        if (null !== $created) {
+            return Item::record($created, $fragment, $label);
+        }
+
+        $address = $link?->address;
+
+        return null === $address
+            ? Item::text((string) $label, $this->input->postedOrNull('html'))
+            : Item::url(Url::parse($address), (string) $label);
     }
 }

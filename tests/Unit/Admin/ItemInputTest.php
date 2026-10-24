@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Contenir\Extension\Navigation\Tests\Unit\Admin;
 
+use Contenir\Extension\Api\Exception\LinkRejectedException;
 use Contenir\Extension\Navigation\Admin\Input;
 use Contenir\Extension\Navigation\Admin\ItemInput;
-use Contenir\Navigation\Exception\InvalidItemException;
 use Contenir\Navigation\Link\RecordTarget;
 use Contenir\Navigation\Link\Url;
 use Contenir\Navigation\Menu\Display;
@@ -22,7 +22,7 @@ use PHPUnit\Framework\TestCase;
 final class ItemInputTest extends TestCase
 {
     /**
-     * @param array<string, string> $posted
+     * @param array<string, mixed> $posted
      */
     private static function input(array $posted): ItemInput
     {
@@ -65,7 +65,7 @@ final class ItemInputTest extends TestCase
                 sequence: 4,
                 created: $created,
             ),
-            self::input(['links_to' => 'url', 'url' => '/shop', 'label' => 'Store'])->item($item),
+            self::input(['link' => ['kind' => 'address', 'address' => '/shop'], 'label' => 'Store'])->item($item),
         );
     }
 
@@ -77,20 +77,35 @@ final class ItemInputTest extends TestCase
         static::assertSame(
             [Item::NEW_TAB, null],
             [
-                self::input(['links_to' => 'url', 'url' => 'https://shop.example.com', 'label' => 'Shop'])
+                self::input([
+                    'link'  => ['kind' => 'address', 'address' => 'https://shop.example.com'],
+                    'label' => 'Shop',
+                ])
                     ->item($shop)
                     ->target,
-                self::input(['links_to' => 'text', 'label' => 'Shop'])->item($shop)->target,
+                self::input(['label' => 'Shop'])->item($shop)->target,
             ],
         );
     }
 
     #[Test]
-    public function anythingElseIsAnAddress(): void
+    public function anAddressLinksToItWithItsLabel(): void
     {
         static::assertEquals(
             Item::url(Url::parse('#booking'), 'Book'),
-            self::input(['links_to' => 'other', 'url' => '#booking', 'label' => 'Book'])->item(),
+            self::input(['link' => ['kind' => 'address', 'address' => '#booking'], 'label' => 'Book'])->item(),
+        );
+    }
+
+    #[Test]
+    public function aPageMadeForTheItemIsWhatItLinksTo(): void
+    {
+        static::assertEquals(
+            Item::record(new RecordTarget('page', 9), null, 'Story'),
+            self::input([
+                'link'  => ['kind' => 'new', 'section' => 'page', 'title' => 'Our story', 'path' => '/our-story'],
+                'label' => 'Story',
+            ])->item(created: new RecordTarget('page', 9)),
         );
     }
 
@@ -100,8 +115,7 @@ final class ItemInputTest extends TestCase
         static::assertEquals(
             Item::record(new RecordTarget('page', 'about:us'), 'staff', 'Team'),
             self::input([
-                'links_to' => 'record',
-                'record'   => 'page:about:us',
+                'link'     => ['kind' => 'record', 'record' => 'page:about:us'],
                 'fragment' => '#staff',
                 'label'    => 'Team',
             ])->item(),
@@ -111,10 +125,10 @@ final class ItemInputTest extends TestCase
     #[Test]
     public function aRecordItemNeedsARecordChosen(): void
     {
-        $this->expectException(InvalidItemException::class);
-        $this->expectExceptionMessage('Choose the page or record the item links to');
+        $this->expectException(LinkRejectedException::class);
+        $this->expectExceptionMessage('Choose the page or record to link to');
 
-        self::input(['links_to' => 'record', 'record' => 'page'])->item();
+        self::input(['link' => ['kind' => 'record', 'record' => 'page']])->item();
     }
 
     #[Test]
@@ -127,11 +141,26 @@ final class ItemInputTest extends TestCase
     }
 
     #[Test]
+    public function readsWhatTheLinkFieldChose(): void
+    {
+        static::assertSame(
+            ['page', null],
+            [
+                self::input(['link' => ['kind' => 'new', 'section' => 'page', 'title' => 'Story', 'path' => '/s']])
+                    ->link()
+                    ?->newRecord
+                    ?->section,
+                self::input([])->link(),
+            ],
+        );
+    }
+
+    #[Test]
     public function textKeepsItsHtml(): void
     {
         static::assertEquals(
             Item::text('Hours', '<b>Open</b>'),
-            self::input(['links_to' => 'text', 'label' => 'Hours', 'html' => '<b>Open</b>'])->item(),
+            self::input(['label' => 'Hours', 'html' => '<b>Open</b>'])->item(),
         );
     }
 

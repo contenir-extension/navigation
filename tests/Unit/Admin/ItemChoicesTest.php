@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace Contenir\Extension\Navigation\Tests\Unit\Admin;
 
-use Contenir\Extension\Api\Record\LinkableSection;
-use Contenir\Extension\Api\Record\RecordsInterface;
-use Contenir\Extension\Api\Record\RecordStatus;
-use Contenir\Extension\Api\Record\RecordSummary;
-use Contenir\Extension\Api\Url\RecordReference;
 use Contenir\Extension\Navigation\Admin\ItemChoices;
 use Contenir\Navigation\Link\RecordTarget;
 use Contenir\Navigation\Menu\Item;
@@ -30,31 +25,6 @@ final class ItemChoicesTest extends TestCase
             parentId: $parent,
             sequence: $sequence,
         );
-    }
-
-    #[Test]
-    public function offersEachRecordWithItsSectionTitleAndPath(): void
-    {
-        $records = $this->createMock(RecordsInterface::class);
-        $records->method('sections')->willReturn([new LinkableSection('page', 'Page')]);
-        $records->expects($this->once())
-            ->method('search')
-            ->with('', [], ItemChoices::RECORDS)
-            ->willReturn([
-                new RecordSummary(new RecordReference('page', 1), 'About us', RecordStatus::Published, '/about'),
-                new RecordSummary(new RecordReference('event', 'open-day'), 'Open day', RecordStatus::Draft),
-            ]);
-
-        static::assertSame(
-            ['page:1' => 'Page: About us (/about)', 'event:open-day' => 'event: Open day'],
-            ItemChoices::records($records),
-        );
-    }
-
-    #[Test]
-    public function offersNoRecordsWhenTheHostLendsNone(): void
-    {
-        static::assertSame([], ItemChoices::records(null));
     }
 
     #[Test]

@@ -26,12 +26,12 @@ final class ItemValuesTest extends TestCase
 
         static::assertSame(
             [
-                ['url',  null, 'hello@example.com', '', false],
-                ['text', null, '<b>Open</b>',       '', true],
+                ['address:hello@example.com', '', false],
+                [null, '<b>Open</b>', '', true],
             ],
             [
-                [$email['links_to'], $email['record'], $email['url'], $email['parent'], $email['new_tab']],
-                [$text['links_to'], $text['url'], $text['html'], $text['parent'], $text['active']],
+                [$email['link'], $email['parent'], $email['new_tab']],
+                [$text['link'], $text['html'], $text['parent'], $text['active']],
             ],
         );
     }
@@ -45,9 +45,7 @@ final class ItemValuesTest extends TestCase
 
         static::assertSame(
             [
-                'links_to' => 'record',
-                'record'   => 'page:4',
-                'url'      => null,
+                'link'     => 'record:page:4',
                 'label'    => 'Team',
                 'fragment' => 'staff',
                 'html'     => null,
@@ -66,9 +64,6 @@ final class ItemValuesTest extends TestCase
     public function showsEverythingThatWasPosted(): void
     {
         $posted = [
-            'links_to' => 'url',
-            'record'   => 'page:1',
-            'url'      => '/shop',
             'label'    => 'Shop',
             'fragment' => 'top',
             'html'     => '<b>x</b>',
@@ -76,15 +71,35 @@ final class ItemValuesTest extends TestCase
             'display'  => 'icon_label',
             'icon'     => 'cart',
             'class'    => 'y',
-            'new_tab'  => '1',
         ];
 
         static::assertSame(
-            [...$posted, 'new_tab' => true, 'active' => false],
+            [...$posted, 'link' => 'address:/shop', 'new_tab' => true, 'active' => false],
             ItemValues::posted(Input::of(
                 (new Psr17Factory())->createServerRequest('POST', '/')
-                    ->withParsedBody($posted),
+                    ->withParsedBody([
+                        ...$posted,
+                        'link'    => ['kind' => 'address', 'address' => '/shop'],
+                        'new_tab' => '1',
+                    ]),
             )),
+        );
+    }
+
+    #[Test]
+    public function showsNoLinkWhenWhatWasPostedIsIncompleteOrANewPage(): void
+    {
+        $posted = static fn(array $link): mixed => ItemValues::posted(Input::of(
+            (new Psr17Factory())->createServerRequest('POST', '/')
+                ->withParsedBody(['link' => $link]),
+        ))['link'];
+
+        static::assertSame(
+            [null, null],
+            [
+                $posted(['kind' => 'record', 'record' => '']),
+                $posted(['kind' => 'new', 'section' => 'page', 'title' => 'Story', 'path' => '/story']),
+            ],
         );
     }
 }

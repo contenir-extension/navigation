@@ -6,6 +6,7 @@ namespace Contenir\Extension\Navigation\Admin;
 
 use Contenir\Extension\Api\Context\ExtensionContextInterface;
 use Contenir\Extension\Api\Exception\InvalidDeclarationException;
+use Contenir\Extension\Api\Exception\LinkRejectedException;
 use Contenir\Extension\Api\Form\Form;
 use Contenir\Extension\Api\Handler\HandlerInterface;
 use Contenir\Extension\Api\Handler\HandlerResult;
@@ -58,40 +59,44 @@ final class ItemEditHandler implements HandlerInterface
             return HandlerResult::redirect(Urls::menu(null))->withMessage('warning', 'That item no longer exists.');
         }
 
-        $menu  = (int) $item->navigationId;
-        $items = $menus->repository->items($menu);
-        $form  = /** @param array<string, scalar|null> $values */ static fn(array $values): Form => ItemForm::editing(
-            ItemChoices::records($menus->records),
+        $menu   = (int) $item->navigationId;
+        $items  = $menus->repository->items($menu);
+        $posted = new ItemInput($input);
+        $parent = 'POST' === $request->getMethod() ? $posted->parent() : $item->parentId;
+        $under  = Placement::item($items, $parent);
+        $form   = /** @param array<string, scalar|null> $values */ static fn(array $values): Form => ItemForm::editing(
             ItemChoices::parents($items, $item->id),
             $values,
+            null !== $menus->records,
+            NewPage::prefix($menus->records, $under),
         );
         if ('POST' !== $request->getMethod()) {
             return self::screen($item, $form(ItemValues::of($item)));
         }
 
-        $posted = new ItemInput($input);
-
         try {
-            $changed = $posted->presented($posted->item($item));
-            $parent  = $posted->parent();
             $menus->transaction->run(
                 /**
                  * @throws InvalidItemException
+                 * @throws InvalidLinkException
+                 * @throws LinkRejectedException
                  * @throws NotFoundException
+                 * @throws PageRefusedException
                  * @throws StorageException
                  */
-                static function () use ($menus, $changed, $parent, $items, $item): void {
+                static function () use ($menus, $posted, $parent, $under, $items, $item): void {
+                    $changed = $posted->presented(
+                        $posted->item($item, NewPage::made($menus->records, $posted->link(), $under)),
+                    );
                     $saved = $menus->repository->saveItem($changed);
                     if ($parent !== $item->parentId) {
-                        $menus->repository->moveItem(
-                            (int) $saved->id,
-                            $parent,
-                            Placement::last($items, $parent),
-                        );
+                        $menus->repository->moveItem((int) $saved->id, $parent, Placement::last($items, $parent));
                     }
                 },
             );
-        } catch (InvalidItemException|InvalidLinkException|NotFoundException $problem) {
+        } catch (
+            InvalidItemException|InvalidLinkException|LinkRejectedException|NotFoundException|PageRefusedException $problem
+        ) {
             return self::screen($item, $form(ItemValues::posted($input)))
                 ->withMessage('danger', $problem->getMessage());
         }
