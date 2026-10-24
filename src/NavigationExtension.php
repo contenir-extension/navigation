@@ -62,6 +62,12 @@ final readonly class NavigationExtension implements ExtensionInterface
         RestoreHandler::NAME    => [RestoreHandler::class, Privilege::Update],
     ];
 
+    /**
+     * The menu tree's lists, which MenuTree, built into the add-on's assets,
+     * lets an editor drag items between.
+     */
+    public const string TREE_COMPONENT = '[data-navtree]';
+
     #[Override]
     public function register(Registry $registry): void
     {
@@ -69,6 +75,7 @@ final readonly class NavigationExtension implements ExtensionInterface
         $registry->module("{$root}/config/admin.xml");
         $registry->templates("{$root}/templates");
         $registry->assets("{$root}/public");
+        $registry->component(self::TREE_COMPONENT, 'js/MenuTree.js');
 
         foreach (self::SCREENS as $name => [$class, $privilege]) {
             $registry->handler($name, $class, $privilege);

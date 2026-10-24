@@ -14,3 +14,5 @@ adheres to [Semantic Versioning](https://semver.org/).
   going into the menu's draft.
 - Publish, with an optional note, discard changes, and History, which restores an earlier revision into the draft.
 - Every screen guarded by `site.navigation.menus`, with publishing needing Approve.
+- Dragging an item by its grip to another place in its menu, under another item or out to a shallower level, saving
+  the move into the draft as the move buttons do.
