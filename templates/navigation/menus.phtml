@@ -1,0 +1,115 @@
+<?php
+/**
+ * The Navigation section's home: the page header with Add menu, a switcher of the site's menus,
+ * and the chosen menu's card: where it stands (live with when and by whom, its unpublished changes,
+ * or not live), its actions, and its tree of items, each with its own actions.
+ *
+ * @var array{
+ *     menus: list<array{id: int, title: string, current: bool}>,
+ *     menu: array{
+ *         id: int|null,
+ *         title: string,
+ *         handle: string,
+ *         description: string|null,
+ *         state: array{live: bool, published: string|null, by: string|null, changes: int},
+ *         tree: list<array<string, mixed>>,
+ *     }|null,
+ * } $values
+ * @var \Contenir\Extension\Api\Module\TemplateHelpersInterface $view
+ */
+$menu = $values['menu'];
+?>
+                <div class="pageheader pageheader--row">
+                    <div class="pageheader__content">
+                        <h1 class="pageheader__title">Navigation</h1>
+                        <p class="pageheader__description">Build the site's menus, then publish them to make them live.</p>
+                    </div>
+                    <div class="pageheader__actions">
+                        <a class="btn btn--outline" href="<?= $view->escape($view->url('menu-add')) ?>"><?= $view->icon('plus') ?><span>Add menu</span></a>
+                    </div>
+                </div>
+
+<?php if (null === $menu): ?>
+                <div class="card">
+                    <div class="card__content card__content--pt">
+                        <div class="empty">
+                            <div class="empty__content">
+                                <h2 class="empty__title">No menus yet</h2>
+                                <p class="empty__description">A menu is a list of links the site draws in one place, such as its header or footer.</p>
+                            </div>
+                            <div class="empty__actions">
+                                <a class="btn btn--primary" href="<?= $view->escape($view->url('menu-add')) ?>"><?= $view->icon('plus') ?><span>Add your first menu</span></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<?php else: ?>
+<?php $state = $menu['state']; ?>
+                <nav class="tabs tabs--pills mb--md" aria-label="Menus">
+                    <div class="tabs__list">
+<?php foreach ($values['menus'] as $tab): ?>
+                        <a class="tabs__trigger<?= $tab['current'] ? ' tabs__trigger--active' : '' ?>" href="<?= $view->escape($view->url('menus', ['menu' => $tab['id']])) ?>"<?php if ($tab['current']): ?> aria-current="page"<?php endif ?>><span><?= $view->escape($tab['title']) ?></span></a>
+<?php endforeach ?>
+                    </div>
+                </nav>
+
+                <div class="card">
+                    <div class="card__header card__header--between">
+                        <div>
+                            <h2 class="card__title"><?= $view->escape($menu['title']) ?> <span class="badge badge--outline"><?= $view->escape($menu['handle']) ?></span></h2>
+                            <p class="card__description">
+<?php if (! $state['live']): ?>
+                                <span class="badge badge--warning-muted">Not live</span> This menu hasn't been published, so the site doesn't show it yet.
+<?php elseif (0 === $state['changes']): ?>
+                                <span class="badge badge--success-muted">Published</span> <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
+<?php else: ?>
+                                <span class="badge badge--info-muted"><?= $state['changes'] ?> unpublished <?= 1 === $state['changes'] ? 'change' : 'changes' ?></span> Published <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
+<?php endif ?>
+                            </p>
+<?php if (null !== $menu['description']): ?>
+                            <p class="card__description"><?= $view->escape($menu['description']) ?></p>
+<?php endif ?>
+                        </div>
+                        <div class="cluster cluster--gap-sm">
+                            <a class="btn btn--ghost btn--sm" href="<?= $view->escape($view->url('history', ['menu' => $menu['id']])) ?>"><?= $view->icon('history') ?><span>History</span></a>
+                            <a class="btn btn--ghost btn--sm" href="<?= $view->escape($view->url('menu-edit', ['menu' => $menu['id']])) ?>"><?= $view->icon('pencil') ?><span>Edit menu</span></a>
+<?php if ($state['live'] && $state['changes'] > 0): ?>
+                            <form method="post" action="<?= $view->escape($view->url('discard', ['menu' => $menu['id']])) ?>">
+                                <?= $view->token() ?>
+                                <button type="submit" class="btn btn--outline btn--sm"><?= $view->icon('arrow-back') ?><span>Discard changes</span></button>
+                            </form>
+<?php endif ?>
+                        </div>
+                    </div>
+                    <div class="card__content">
+<?php if ([] === $menu['tree']): ?>
+                        <div class="empty empty--sm">
+                            <div class="empty__content">
+                                <h3 class="empty__title">No items yet</h3>
+                                <p class="empty__description">Add a page, an address or a heading to start the menu.</p>
+                            </div>
+                        </div>
+<?php else: ?>
+                        <?= $view->render('navigation/tree', ['menu' => $menu['id'], 'rows' => $menu['tree']]) ?>
+<?php endif ?>
+                    </div>
+                    <div class="card__footer card__footer--between">
+                        <a class="btn btn--outline" href="<?= $view->escape($view->url('item-add', ['menu' => $menu['id']])) ?>"><?= $view->icon('plus') ?><span>Add item</span></a>
+<?php if (! $state['live'] || $state['changes'] > 0): ?>
+                        <form method="post" action="<?= $view->escape($view->url('publish', ['menu' => $menu['id']])) ?>" class="cluster cluster--gap-sm">
+                            <?= $view->token() ?>
+                            <label class="sr-only" for="publish-note">What changed</label>
+                            <input type="text" class="input" id="publish-note" name="note" maxlength="255" placeholder="What changed (optional)">
+                            <button type="submit" class="btn btn--primary"><?= $view->icon('upload') ?><span>Publish</span></button>
+                        </form>
+<?php endif ?>
+                    </div>
+                </div>
+
+                <div class="mt--md">
+                    <form method="post" action="<?= $view->escape($view->url('menu-delete', ['menu' => $menu['id']])) ?>" onsubmit="return confirm('Delete this menu and every item in it? Pages and records are kept.')">
+                        <?= $view->token() ?>
+                        <button type="submit" class="btn btn--ghost btn--sm btn--destructive"><?= $view->icon('trash') ?><span>Delete menu</span></button>
+                    </form>
+                </div>
+<?php endif ?>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<admin>
+    <site existing="true">
+        <category>
+            <navigation>
+                <title>Navigation</title>
+                <section>
+                    <menus>
+                        <title>Menus</title>
+                        <handler>menus</handler>
+                    </menus>
+                </section>
+            </navigation>
+        </category>
+    </site>
+</admin>
