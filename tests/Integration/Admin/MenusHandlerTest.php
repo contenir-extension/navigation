@@ -87,7 +87,7 @@ final class MenusHandlerTest extends TestCase
     #[Test]
     public function aRecordInASectionTheSiteNoLongerLinksIsMissing(): void
     {
-        $this->setUpHost(records: false);
+        $this->setUpHostWithoutRecords();
         $menu = $this->menu();
         $this->item($menu, Item::record(new RecordTarget('page', 1)));
 
@@ -216,6 +216,6 @@ final class MenusHandlerTest extends TestCase
     private function shown(array $query = []): array
     {
         /** @var array<string, mixed> */
-        return $this->answer(MenusHandler::class, $query)->template?->values ?? [];
+        return $this->answer(MenusHandler::class, $query)->template->values ?? [];
     }
 }

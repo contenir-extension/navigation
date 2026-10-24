@@ -64,9 +64,45 @@ trait NavigationHostTrait
         );
     }
 
+    /**
+     * @param array<string, object> $services
+     */
+    private function bootHost(array $services): void
+    {
+        $this->host->boot(
+            [NavigationExtension::HANDLE => new NavigationExtension()],
+            [NavigationExtension::HANDLE],
+            [SiteDatabase::SERVICE => $this->database] + $services,
+        );
+    }
+
     private function context(): ExtensionContextInterface
     {
         return $this->host->context(NavigationExtension::HANDLE);
+    }
+
+    private function createHost(): void
+    {
+        $pdo = new PDO('sqlite::memory:');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $driver         = new Sqlite\Pdo\Driver(connection: new Sqlite\Pdo\Connection($pdo));
+        $this->database = new Adapter($driver, new Sqlite\AdapterPlatform($driver));
+        $runner         = new MigrationRunner(
+            $this->database,
+            ConfigProvider::schemaPath(),
+            ConfigProvider::SCHEMA_NAMESPACE,
+            MismatchStrategy::Report,
+            new Sqlite\Metadata\Source($this->database),
+        );
+        $runner->ensureMigrationsTable();
+        $runner->runPending();
+
+        $this->http = new Psr17Factory();
+        $this->host = new InMemoryHost(
+            $this->http,
+            $this->http,
+            new FrozenClock(new DateTimeImmutable('2026-10-23 09:00')),
+        );
     }
 
     /**
@@ -119,57 +155,41 @@ trait NavigationHostTrait
     /**
      * @param array<string, object> $services What else the host offers the add-on, by name
      */
-    private function setUpHost(array $services = [], bool $records = true): void
+    private function setUpHost(array $services = []): void
     {
-        $pdo = new PDO('sqlite::memory:');
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $driver         = new Sqlite\Pdo\Driver(connection: new Sqlite\Pdo\Connection($pdo));
-        $this->database = new Adapter($driver, new Sqlite\AdapterPlatform($driver));
-        $runner         = new MigrationRunner(
-            $this->database,
-            ConfigProvider::schemaPath(),
-            ConfigProvider::SCHEMA_NAMESPACE,
-            MismatchStrategy::Report,
-            new Sqlite\Metadata\Source($this->database),
-        );
-        $runner->ensureMigrationsTable();
-        $runner->runPending();
+        $this->createHost();
+        $this->host->linkable(new LinkableSection(
+            'page',
+            'Page',
+            creatable: true,
+            workflows: [new Workflow('standard', 'Standard page')],
+        ));
+        $this->host->linkable(new LinkableSection('news', 'News article'));
+        $this->host->seed('page', 1, [
+            'title'  => 'About us',
+            'path'   => '/about',
+            'status' => RecordStatus::Published->value,
+        ]);
+        $this->host->seed('page', 2, [
+            'title'  => 'Our team',
+            'path'   => '/about/our-team',
+            'status' => RecordStatus::Draft->value,
+        ]);
+        $this->host->seed('news', 7, [
+            'title'  => 'Launch',
+            'path'   => '/news/launch',
+            'status' => RecordStatus::Archived->value,
+        ]);
 
-        $this->http = new Psr17Factory();
-        $this->host = new InMemoryHost(
-            $this->http,
-            $this->http,
-            new FrozenClock(new DateTimeImmutable('2026-10-23 09:00')),
-        );
-        if ($records) {
-            $this->host->linkable(new LinkableSection(
-                'page',
-                'Page',
-                creatable: true,
-                workflows: [new Workflow('standard', 'Standard page')],
-            ));
-            $this->host->linkable(new LinkableSection('news', 'News article'));
-            $this->host->seed('page', 1, [
-                'title'  => 'About us',
-                'path'   => '/about',
-                'status' => RecordStatus::Published->value,
-            ]);
-            $this->host->seed('page', 2, [
-                'title'  => 'Our team',
-                'path'   => '/about/our-team',
-                'status' => RecordStatus::Draft->value,
-            ]);
-            $this->host->seed('news', 7, [
-                'title'  => 'Launch',
-                'path'   => '/news/launch',
-                'status' => RecordStatus::Archived->value,
-            ]);
-        }
+        $this->bootHost($services);
+    }
 
-        $this->host->boot(
-            [NavigationExtension::HANDLE => new NavigationExtension()],
-            [NavigationExtension::HANDLE],
-            [SiteDatabase::SERVICE => $this->database] + $services,
-        );
+    /**
+     * Sets the host up as a site that links no sections, so every record item is missing.
+     */
+    private function setUpHostWithoutRecords(): void
+    {
+        $this->createHost();
+        $this->bootHost([]);
     }
 }

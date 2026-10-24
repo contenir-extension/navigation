@@ -34,7 +34,7 @@ final class MenuHandlersTest extends TestCase
      */
     private static function fieldNames(HandlerResult $result): array
     {
-        return array_map(static fn(Field $field): string => $field->name, $result->screen?->form?->fields ?? []);
+        return array_map(static fn(Field $field): string => $field->name, $result->screen?->form->fields ?? []);
     }
 
     #[Test]
