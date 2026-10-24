@@ -1,0 +1,13 @@
+.DS_Store
+.idea
+/.phpunit.cache/
+/clover.xml
+/phpunit.xml
+/vendor/
+/infection.log
+/summary.log
+/infection.json5
+/node_modules/
+/build/
+/composer.local.json
+/composer.local.lock

@@ -1,0 +1,52 @@
+<?php
+/**
+ * A menu's revisions, newest first: when each was published, by whom and its note, the live one
+ * marked, and a way to restore any other into the draft.
+ *
+ * @var array{
+ *     menu: array{id: int|null, title: string},
+ *     revisions: list<array{id: int, published: string, by: string|null, note: string|null, live: bool}>,
+ * } $values
+ * @var \Contenir\Extension\Api\Module\TemplateHelpersInterface $view
+ */
+?>
+                <div class="pageheader">
+                    <div class="pageheader__content">
+                        <h1 class="pageheader__title"><?= $view->escape($values['menu']['title']) ?> history</h1>
+                        <p class="pageheader__description">Every time the menu was published. Restoring one copies it into the draft, ready to publish again.</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card__content card__content--pt">
+<?php if ([] === $values['revisions']): ?>
+                        <div class="empty empty--sm">
+                            <div class="empty__content">
+                                <h2 class="empty__title">Not published yet</h2>
+                                <p class="empty__description">Each time the menu is published, it is kept here.</p>
+                            </div>
+                        </div>
+<?php else: ?>
+                        <ul class="list list--boxed">
+<?php foreach ($values['revisions'] as $revision): ?>
+                            <li class="list__item">
+                                <div class="list__body">
+                                    <div class="list__title"><?= $view->escape($revision['published']) ?><?= null === $revision['by'] ? '' : ' by ' . $view->escape($revision['by']) ?><?php if ($revision['live']): ?> <span class="badge badge--success-muted">Live</span><?php endif ?></div>
+<?php if (null !== $revision['note']): ?>
+                                    <div class="list__description"><?= $view->escape($revision['note']) ?></div>
+<?php endif ?>
+                                </div>
+<?php if (! $revision['live']): ?>
+                                <div class="list__actions">
+                                    <form method="post" action="<?= $view->escape($view->url('restore', ['revision' => $revision['id']])) ?>">
+                                        <?= $view->token() ?>
+                                        <button type="submit" class="btn btn--outline btn--sm"><?= $view->icon('refresh') ?><span>Restore</span></button>
+                                    </form>
+                                </div>
+<?php endif ?>
+                            </li>
+<?php endforeach ?>
+                        </ul>
+<?php endif ?>
+                    </div>
+                </div>

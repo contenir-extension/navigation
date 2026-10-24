@@ -1,0 +1,16 @@
+# Changelog
+
+All notable changes to this project are documented here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
+adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+### Added
+
+- The Navigation section of Site Pages: a switcher of the site's menus and the chosen menu's tree, with where it stands
+  (not live, published with when and by whom, or its unpublished changes) and badges for items the site won't show.
+- Menus added, edited and deleted; items added, edited, moved up and down or under another, and deleted, each change
+  going into the menu's draft.
+- Publish, with an optional note, discard changes, and History, which restores an earlier revision into the draft.
+- Every screen guarded by `site.navigation.menus`, with publishing needing Approve.

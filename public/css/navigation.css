@@ -1,0 +1,13 @@
+/* The Navigation screen's menu tree: nested items indent under their parent. */
+.navtree .navtree {
+    margin-top: 0.5rem;
+    margin-left: 1.75rem;
+}
+
+.navtree__item + .navtree__item {
+    margin-top: 0.5rem;
+}
+
+.navtree__path {
+    font-family: var(--font-mono, monospace);
+}

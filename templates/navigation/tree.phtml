@@ -1,0 +1,47 @@
+<?php
+/**
+ * One level of a menu's tree: each item's icon, label and path, a badge where the site won't show
+ * it as it is, and its actions (edit, add an item under it, move it up or down, delete it), with the
+ * items nested under it drawn the same way.
+ *
+ * @var array{menu: int, rows: list<array<string, mixed>>} $values
+ * @var \Contenir\Extension\Api\Module\TemplateHelpersInterface $view
+ */
+$last = count($values['rows']) - 1;
+?>
+                        <ul class="list list--boxed navtree">
+<?php foreach ($values['rows'] as $position => $row): ?>
+<?php
+    /** @var array{id: int, label: string, icon: string, path: string|null, badge: string|null, drawn: string, children: list<array<string, mixed>>} $row */
+    $item = $row['id'];
+?>
+                            <li class="list__item navtree__item">
+                                <div class="list__body">
+                                    <div class="list__title"><?= $view->icon($row['icon']) ?> <?= $view->escape($row['label']) ?><?php if (null !== $row['badge']): ?> <span class="badge badge--warning-muted"><?= $view->escape($row['badge']) ?></span><?php endif ?></div>
+<?php if (null !== $row['path']): ?>
+                                    <div class="list__description navtree__path"><?= $view->escape($row['path']) ?></div>
+<?php endif ?>
+<?php if ([] !== $row['children']): ?>
+                                    <?= $view->render('navigation/tree', ['menu' => $values['menu'], 'rows' => $row['children']]) ?>
+<?php endif ?>
+                                </div>
+                                <div class="list__actions cluster cluster--gap-xs">
+                                    <a class="btn btn--ghost btn--icon btn--sm" href="<?= $view->escape($view->url('item-edit', ['item' => $item])) ?>" aria-label="Edit <?= $view->escape($row['label']) ?>" data-tooltip="Edit"><?= $view->icon('pencil') ?></a>
+                                    <a class="btn btn--ghost btn--icon btn--sm" href="<?= $view->escape($view->url('item-add', ['menu' => $values['menu'], 'parent' => $item])) ?>" aria-label="Add an item under <?= $view->escape($row['label']) ?>" data-tooltip="Add under"><?= $view->icon('plus') ?></a>
+<?php foreach (['up' => [0 < $position, 'arrow-up', 'Move up'], 'down' => [$position < $last, 'arrow-down', 'Move down']] as $direction => [$can, $icon, $label]): ?>
+<?php if ($can): ?>
+                                    <form method="post" action="<?= $view->escape($view->url('item-move', ['item' => $item])) ?>">
+                                        <?= $view->token() ?>
+                                        <input type="hidden" name="direction" value="<?= $direction ?>">
+                                        <button type="submit" class="btn btn--ghost btn--icon btn--sm" aria-label="<?= $label ?>: <?= $view->escape($row['label']) ?>" data-tooltip="<?= $label ?>"><?= $view->icon($icon) ?></button>
+                                    </form>
+<?php endif ?>
+<?php endforeach ?>
+                                    <form method="post" action="<?= $view->escape($view->url('item-delete', ['item' => $item])) ?>" onsubmit="return confirm('Delete this item and everything under it? The page or record it links to is kept.')">
+                                        <?= $view->token() ?>
+                                        <button type="submit" class="btn btn--ghost btn--icon btn--sm" aria-label="Delete <?= $view->escape($row['label']) ?>" data-tooltip="Delete"><?= $view->icon('trash') ?></button>
+                                    </form>
+                                </div>
+                            </li>
+<?php endforeach ?>
+                        </ul>
