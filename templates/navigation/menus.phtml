@@ -19,15 +19,15 @@
  */
 $menu = $values['menu'];
 ?>
-                <div class="pageheader pageheader--row">
+                <div class="pageheader pageheader--row pageheader--sticky">
                     <div class="pageheader__content">
                         <h1 class="pageheader__title">Navigation</h1>
-                        <p class="pageheader__description">Build the site's menus, then publish them to make them live.</p>
                     </div>
                     <div class="pageheader__actions">
                         <a class="btn btn--outline" href="<?= $view->escape($view->url('menu-add')) ?>"><?= $view->icon('plus') ?><span>Add menu</span></a>
                     </div>
                 </div>
+                <p class="pageheader__description">Build the site's menus, then publish them to make them live.</p>
 
 <?php if (null === $menu): ?>
                 <div class="card">

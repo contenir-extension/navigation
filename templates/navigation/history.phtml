@@ -10,12 +10,12 @@
  * @var \Contenir\Extension\Api\Module\TemplateHelpersInterface $view
  */
 ?>
-                <div class="pageheader">
+                <div class="pageheader pageheader--row pageheader--sticky">
                     <div class="pageheader__content">
                         <h1 class="pageheader__title"><?= $view->escape($values['menu']['title']) ?> history</h1>
-                        <p class="pageheader__description">Every time the menu was published. Restoring one copies it into the draft, ready to publish again.</p>
                     </div>
                 </div>
+                <p class="pageheader__description">Every time the menu was published. Restoring one copies it into the draft, ready to publish again.</p>
 
                 <div class="card">
                     <div class="card__content card__content--pt">
