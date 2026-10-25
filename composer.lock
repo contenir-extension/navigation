@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ff211788362960013e6e3db3d36a06e4",
+    "content-hash": "03a104a4482e05ad95eac47028bfdbc2",
     "packages": [
         {
             "name": "brick/varexporter",
@@ -57,16 +57,16 @@
         },
         {
             "name": "contenir/contenir-extension-api",
-            "version": "dev-main",
+            "version": "v0.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contenir/contenir-extension-api.git",
-                "reference": "69b0eea0bf859a2e25908c9c1f07983238cd1728"
+                "reference": "6743736fb31e31b207d36fcbfbcaecc3eef7ece4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contenir/contenir-extension-api/zipball/69b0eea0bf859a2e25908c9c1f07983238cd1728",
-                "reference": "69b0eea0bf859a2e25908c9c1f07983238cd1728",
+                "url": "https://api.github.com/repos/contenir/contenir-extension-api/zipball/6743736fb31e31b207d36fcbfbcaecc3eef7ece4",
+                "reference": "6743736fb31e31b207d36fcbfbcaecc3eef7ece4",
                 "shasum": ""
             },
             "require": {
@@ -94,7 +94,6 @@
                 "nyholm/psr7": "A PSR-7 and PSR-17 implementation for the in-memory host (Testing\\InMemoryHost), or use any other",
                 "phpunit/phpunit": "Runs the conformance suite (Conformance\\Abstract*ConformanceTestCase) against a host"
             },
-            "default-branch": true,
             "bin": [
                 "bin/extension-boundary"
             ],
@@ -126,20 +125,20 @@
                 "issues": "https://github.com/contenir/contenir-extension-api/issues",
                 "source": "https://github.com/contenir/contenir-extension-api"
             },
-            "time": "2026-10-24T11:01:54+00:00"
+            "time": "2026-10-25T04:32:36+00:00"
         },
         {
             "name": "contenir/contenir-navigation",
-            "version": "dev-main",
+            "version": "v0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contenir/contenir-navigation.git",
-                "reference": "5b4fe600c00316b00ebc5f9a6cbe6e32efebc37c"
+                "reference": "7a53d8c7d918234a4a73f07c4ce969a9e44b68a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contenir/contenir-navigation/zipball/5b4fe600c00316b00ebc5f9a6cbe6e32efebc37c",
-                "reference": "5b4fe600c00316b00ebc5f9a6cbe6e32efebc37c",
+                "url": "https://api.github.com/repos/contenir/contenir-navigation/zipball/7a53d8c7d918234a4a73f07c4ce969a9e44b68a4",
+                "reference": "7a53d8c7d918234a4a73f07c4ce969a9e44b68a4",
                 "shasum": ""
             },
             "require": {
@@ -159,7 +158,6 @@
                 "php-db/phpdb-sqlite": "0.3.x-dev",
                 "phpunit/phpunit": "^11.5.42"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laminas": {
@@ -191,7 +189,7 @@
                 "issues": "https://github.com/contenir/contenir-navigation/issues",
                 "source": "https://github.com/contenir/contenir-navigation"
             },
-            "time": "2026-10-24T08:17:19+00:00"
+            "time": "2026-10-25T04:32:49+00:00"
         },
         {
             "name": "laminas/laminas-servicemanager",
@@ -5052,8 +5050,6 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "contenir/contenir-extension-api": 20,
-        "contenir/contenir-navigation": 20,
         "contenir/contenir-qa-tools": 20
     },
     "prefer-stable": true,
