@@ -7,6 +7,7 @@
                 <section>
                     <menus>
                         <title>Menus</title>
+                        <icon>menu-2</icon>
                         <handler>menus</handler>
                     </menus>
                 </section>
