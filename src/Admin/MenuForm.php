@@ -21,9 +21,9 @@ use function implode;
 use function sprintf;
 
 /**
- * A menu's settings as a described form: its title and the handle templates ask for it by, filled
+ * A menu's settings as a described form: its title and the identifier templates ask for it by, filled
  * from the title until the editor changes it, and in the sidebar's Info card where it appears on
- * the site. A handle other menus have too is allowed; the form says which menu the site shows.
+ * the site. An identifier other menus have too is allowed; the form says which menu the site shows.
  */
 final class MenuForm
 {
@@ -53,7 +53,7 @@ final class MenuForm
                 new Field('title', 'Title', required: true, default: $values['title'] ?? null),
                 new Field(
                     'handle',
-                    'Handle',
+                    'Identifier',
                     FieldType::Identifier,
                     'What the site\'s templates ask for this menu by, such as header or footer: lowercase letters, digits and dashes.',
                     required: true,
@@ -118,7 +118,7 @@ final class MenuForm
         };
 
         return sprintf(
-            'Also the handle of %s %s. %s',
+            'Also the identifier of %s %s. %s',
             1 === count($others) ? 'menu' : 'menus',
             implode(', ', array_map(static fn(Navigation $other): string => sprintf('"%s"', $other->title), $others)),
             $site,

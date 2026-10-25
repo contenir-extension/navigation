@@ -10,11 +10,11 @@ Requires contenir/contenir-extension-api 0.7.3 and contenir/contenir-navigation 
 
 ### Changed
 
-- A menu's Handle fills from its Title as you type, until you change it, and keeps to the handle rule (lowercase
-  letters, digits and dashes, at most 64 characters).
-- Where it appears sits in an Info card in the sidebar, beside the menu's Title and Handle.
-- A handle another menu has is saved rather than refused. The form warns beside the Handle while it is shared, naming
-  the other menus and which one the site shows (the first published in menu order), and the save says so too.
+- A menu's handle is labelled Identifier. It fills from the Title as you type, until you change it, and keeps to the
+  handle rule (lowercase letters, digits and dashes, at most 64 characters).
+- Where it appears sits in an Info card in the sidebar, beside the menu's Title and Identifier.
+- An identifier another menu has is saved rather than refused. The form warns beside it while it is shared, naming the
+  other menus and which one the site shows (the first published in menu order), and the save says so too.
 
 ## [0.1.0] - 2026-10-25
 

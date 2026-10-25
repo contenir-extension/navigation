@@ -40,22 +40,22 @@ final class MenuHandlersTest extends TestCase
             'no other menu has it'            => [[['footer', 'Footer', false]], null],
             'an unpublished one has it'       => [
                 [['header', 'Header', false]],
-                'Also the handle of menu "Header". None of them is published yet.',
+                'Also the identifier of menu "Header". None of them is published yet.',
             ],
             'an earlier published one has it' => [
                 [['header', 'Header', true]],
-                'Also the handle of menu "Header". The site shows "Header", the first published in menu order.',
+                'Also the identifier of menu "Header". The site shows "Header", the first published in menu order.',
             ],
             'this is the one the site shows'  => [
                 [['header', 'Header', false]],
-                'Also the handle of menu "Header". The site shows this one, the first published in menu order.',
+                'Also the identifier of menu "Header". The site shows this one, the first published in menu order.',
             ],
             'two others have it'              => [
                 [
                     ['header', 'Header',       false],
                     ['header', 'Header (old)', false],
                 ],
-                'Also the handle of menus "Header", "Header (old)". None of them is published yet.',
+                'Also the identifier of menus "Header", "Header (old)". None of them is published yet.',
             ],
         ];
     }
@@ -125,7 +125,7 @@ final class MenuHandlersTest extends TestCase
         static::assertSame(
             [[
                 'level' => 'warning',
-                'text' => 'Menu added. Also the handle of menu "Header". The site shows "Header", the first published in menu order.',
+                'text' => 'Menu added. Also the identifier of menu "Header". The site shows "Header", the first published in menu order.',
             ]],
             $result->messages,
         );
@@ -173,7 +173,7 @@ final class MenuHandlersTest extends TestCase
             [
                 [[
                     'level' => 'warning',
-                    'text'  => 'Menu saved. Also the handle of menu "Header". None of them is published yet.',
+                    'text'  => 'Menu saved. Also the identifier of menu "Header". None of them is published yet.',
                 ]],
                 'header',
             ],
@@ -200,7 +200,7 @@ final class MenuHandlersTest extends TestCase
         $result = $this->answer(MenuAddHandler::class, posted: ['title' => '', 'handle' => 'header']);
 
         static::assertSame(
-            'Also the handle of menu "Header". None of them is published yet.',
+            'Also the identifier of menu "Header". None of them is published yet.',
             $result->screen?->form?->field('handle')?->attributes['warning'] ?? null,
         );
     }

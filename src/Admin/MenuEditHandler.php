@@ -21,7 +21,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Renames a menu, changes its handle or says where it appears.
+ * Renames a menu, changes its identifier or says where it appears.
  */
 final class MenuEditHandler implements HandlerInterface
 {
@@ -36,7 +36,7 @@ final class MenuEditHandler implements HandlerInterface
     {
         return HandlerResult::screen(new Screen(
             "Edit {$menu->title}",
-            'Changing the handle changes what the site\'s templates ask for, so do it with the templates.',
+            'Changing the identifier changes what the site\'s templates ask for, so do it with the templates.',
             MenuForm::of($values, $shared),
             parent: new ParentPage('Navigation', MenusHandler::NAME, ['menu' => (int) $menu->id]),
         ));

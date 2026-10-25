@@ -108,8 +108,9 @@ final class MenuFormTest extends TestCase
     public function warnsBesideTheHandleWhenItIsShared(): void
     {
         static::assertSame(
-            'Also the handle of menu "Header".',
-            MenuForm::of(shared: 'Also the handle of menu "Header".')->field('handle')?->attributes['warning'] ?? null,
+            'Also the identifier of menu "Header".',
+            MenuForm::of(shared: 'Also the identifier of menu "Header".')->field('handle')?->attributes['warning']
+                ?? null,
         );
     }
 }
