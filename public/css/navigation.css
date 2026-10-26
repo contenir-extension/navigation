@@ -5,6 +5,17 @@
     gap: 0.25rem;
 }
 
+.navmenu__handle .btn--icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--fg-muted, currentColor);
+}
+
+.navmenu__handle .btn--icon .icon {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
 .navmenu__side {
     display: flex;
     flex-direction: column;
