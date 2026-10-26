@@ -7,6 +7,7 @@ namespace Contenir\Extension\Navigation\Tests\Unit;
 use Contenir\Extension\Api\Handler\HandlerDeclaration;
 use Contenir\Extension\Api\Registration;
 use Contenir\Extension\Api\Registry;
+use Contenir\Extension\Navigation\Admin\MenusMenu;
 use Contenir\Extension\Navigation\NavigationExtension;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -62,6 +63,12 @@ final class NavigationExtensionTest extends TestCase
                 self::registration()->handlers,
             ),
         );
+    }
+
+    #[Test]
+    public function listsEachMenuInSitePagesSectionMenu(): void
+    {
+        static::assertSame(MenusMenu::class, self::registration()->module?->menu);
     }
 
     #[Test]
