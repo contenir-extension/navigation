@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Contenir\Extension\Navigation\Tests\Unit\Admin;
 
 use Contenir\Extension\Api\Form\Field;
+use Contenir\Extension\Api\Form\Group as FormGroup;
 use Contenir\Extension\Navigation\Admin\Input;
 use Contenir\Extension\Navigation\Admin\MenuForm;
 use Contenir\Navigation\Menu\Navigation;
@@ -72,11 +73,44 @@ final class MenuFormTest extends TestCase
     }
 
     #[Test]
+    public function fillsTheHandleFromTheTitleWithinNavigationsRule(): void
+    {
+        $handle = MenuForm::of()->field('handle');
+
+        static::assertSame(
+            ['identifier', ['data-identifier' => 'title', 'pattern' => '[a-z][a-z0-9\\-]{0,63}', 'maxlength' => 64]],
+            [$handle?->type, $handle?->attributes],
+        );
+    }
+
+    #[Test]
+    public function keepsTheIdentifierAndWhereItAppearsInTheSidebarsInfoCard(): void
+    {
+        static::assertSame(
+            [['menu', 'Menu', false, ['title']], ['info', 'Info', true, ['handle', 'description']]],
+            array_map(
+                static fn(FormGroup $group): array => [$group->id, $group->legend, $group->aside, $group->fieldNames()],
+                MenuForm::of()->groups,
+            ),
+        );
+    }
+
+    #[Test]
     public function showsWhatWasPostedAgain(): void
     {
         static::assertSame(
             ['title' => 'Header', 'handle' => 'header', 'description' => 'Top'],
             MenuForm::values(self::input()),
+        );
+    }
+
+    #[Test]
+    public function warnsBesideTheHandleWhenItIsShared(): void
+    {
+        static::assertSame(
+            'Also the identifier of menu "Header".',
+            MenuForm::of(shared: 'Also the identifier of menu "Header".')->field('handle')?->attributes['warning']
+                ?? null,
         );
     }
 }

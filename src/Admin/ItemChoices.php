@@ -35,7 +35,7 @@ final readonly class ItemChoices
     {
         $excluded = null === $moving ? [] : [$moving, ...Family::descendants($items, $moving)];
 
-        return [self::TOP => 'The top of the menu'] + self::indented(Tree::build($items), $excluded, 0);
+        return [self::TOP => 'None (top level)'] + self::indented(Tree::build($items), $excluded, 0);
     }
 
     /**

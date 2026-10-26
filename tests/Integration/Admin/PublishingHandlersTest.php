@@ -5,14 +5,20 @@ declare(strict_types=1);
 namespace Contenir\Extension\Navigation\Tests\Integration\Admin;
 
 use Contenir\Extension\Api\Editor\Editor;
-use Contenir\Extension\Navigation\Admin\DiscardHandler;
+use Contenir\Extension\Api\Handler\HandlerInterface;
 use Contenir\Extension\Navigation\Admin\HistoryHandler;
+use Contenir\Extension\Navigation\Admin\ItemAddHandler;
+use Contenir\Extension\Navigation\Admin\ItemDeleteHandler;
+use Contenir\Extension\Navigation\Admin\ItemEditHandler;
+use Contenir\Extension\Navigation\Admin\ItemMoveHandler;
+use Contenir\Extension\Navigation\Admin\ItemVisibilityHandler;
 use Contenir\Extension\Navigation\Admin\PublishHandler;
 use Contenir\Extension\Navigation\Admin\RestoreHandler;
 use Contenir\Extension\Navigation\NavigationExtension;
 use Contenir\Extension\Navigation\Tests\Trait\NavigationHostTrait;
 use Contenir\Navigation\Menu\Item;
 use Override;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -29,56 +35,122 @@ final class PublishingHandlersTest extends TestCase
 
     private int $menu;
 
-    #[Test]
-    public function discardingAMenuNeverPublishedSaysThereIsNothingToGoBackTo(): void
+    /**
+     * @return array<string, array{class-string<HandlerInterface>, string, array<string, string>, string|null}>
+     */
+    public static function liveChangeProvider(): array
     {
-        $result = $this->answer(DiscardHandler::class, ['menu' => $this->menu], []);
-
-        static::assertSame(
-            [
-                [[
-                    'level' => 'warning',
-                    'text'  => 'The menu has never been published, so there is nothing to go back to.',
-                ]],
-                1,
+        return [
+            'adding an item'   => [
+                ItemAddHandler::class,
+                'menu',
+                ['link' => '{"kind":"text"}', 'label' => 'Sale', 'active' => '1'],
+                'Item added.',
             ],
-            [$result->messages, count($this->menus()->repository->items($this->menu))],
-        );
+            'editing an item'  => [
+                ItemEditHandler::class,
+                'item',
+                ['link' => '{"kind":"text"}', 'label' => 'Shop now', 'active' => '1'],
+                'Item saved.',
+            ],
+            'deleting an item' => [ItemDeleteHandler::class, 'item', [], 'Item deleted.'],
+            'moving an item'   => [ItemMoveHandler::class, 'item', ['direction' => 'down'], null],
+            'hiding an item'   => [ItemVisibilityHandler::class, 'item', [], null],
+        ];
     }
 
-    #[Test]
-    public function discardingOnlyWhenPostedAndAMenuThatIsGoneSaysSo(): void
+    /**
+     * @return array<string, array{string, array<string, int>, int, int|null}>
+     */
+    public static function unrecordableEditorProvider(): array
     {
-        static::assertSame(
-            [
-                '/admin/extension/navigation/menus?menu=1',
-                [['level' => 'warning', 'text' => 'That menu no longer exists.']],
-            ],
-            [
-                $this->answer(DiscardHandler::class, ['menu' => $this->menu])->url,
-                $this->answer(DiscardHandler::class, ['menu' => 9], [])->messages,
-            ],
-        );
+        return [
+            'publishing'          => ['publish', ['menu' => 1], 0, null],
+            'deleting an item'    => ['item-delete', ['item' => 1], 1, 1],
+            'restoring a version' => ['restore', ['revision' => 1], 2, 2],
+            'hiding an item'      => ['item-visibility', ['item' => 1], 1, 1],
+        ];
     }
 
+    /**
+     * @param class-string<HandlerInterface> $handler
+     * @param array<string, string>          $posted
+     */
     #[Test]
-    public function discardingReturnsTheDraftToWhatIsLive(): void
-    {
-        $this->answer(PublishHandler::class, ['menu' => $this->menu], []);
+    #[DataProvider('liveChangeProvider')]
+    public function aChangeToALiveMenuGoesLiveAsItIsSaved(
+        string $handler,
+        string $by,
+        array $posted,
+        ?string $said,
+    ): void {
         $this->item($this->menu, Item::text('Sale'), position: 1);
+        $this->answer(PublishHandler::class, ['menu' => $this->menu], []);
 
-        $result = $this->answer(DiscardHandler::class, ['menu' => $this->menu], []);
+        $result = $this->answer($handler, [$by => 'menu' === $by ? $this->menu : 1], $posted);
+        $menu   = $this->menus()->repository->navigation($this->menu);
 
         static::assertSame(
-            [[['level' => 'success', 'text' => 'Changes discarded.']], 1],
-            [$result->messages, count($this->menus()->repository->items($this->menu))],
+            [$said, 2, 2],
+            [
+                $result->messages[0]['text'] ?? null,
+                count($this->menus()->repository->revisions($this->menu)),
+                $menu->revisionId,
+            ],
         );
     }
 
     #[Test]
-    public function historyDrawsEachRevisionWithAWayToRestoreTheOthers(): void
+    public function aChangeToAMenuNotYetPublishedStaysInItsDraft(): void
     {
-        $this->answer(PublishHandler::class, ['menu' => $this->menu], ['note' => 'First & best']);
+        $this->answer(ItemDeleteHandler::class, ['item' => 1], []);
+
+        static::assertSame(
+            [null, []],
+            [
+                $this->menus()->repository->navigation($this->menu)->revisionId,
+                $this->menus()->repository->revisions($this->menu),
+            ],
+        );
+    }
+
+    /**
+     * Publishes the menu $published times as someone who can be recorded, then asks $handler as an
+     * editor whose id is too long to record, and expects to be sent back with the live revision
+     * still $live.
+     *
+     * @param array<string, int> $query
+     */
+    #[Test]
+    #[DataProvider('unrecordableEditorProvider')]
+    public function aChangeWhoseEditorCannotBeRecordedSaysSoAndLeavesTheSiteAsItWas(
+        string $handler,
+        array $query,
+        int $published,
+        ?int $live,
+    ): void {
+        for ($time = 0; $time < $published; $time++) {
+            $this->answer(PublishHandler::class, ['menu' => $this->menu], []);
+        }
+
+        $response = $this->request(
+            $handler,
+            $query,
+            [NavigationExtension::SECTION],
+            [],
+            new Editor(str_repeat('a', times: 65), 'Ann Editor'),
+        );
+
+        static::assertSame(
+            [302, $live],
+            [$response->getStatusCode(), $this->menus()->repository->navigation($this->menu)->revisionId],
+        );
+    }
+
+    #[Test]
+    public function historyDrawsEachRevisionWithAnyNoteAndAWayToRestoreTheOthers(): void
+    {
+        $this->menus()->publisher->publish($this->menu, note: 'First & best');
         $this->answer(PublishHandler::class, ['menu' => $this->menu], []);
 
         $body = (string) $this->request('history', ['menu' => $this->menu])->getBody();
@@ -100,19 +172,19 @@ final class PublishingHandlersTest extends TestCase
             'publish',
             ['menu' => $this->menu],
             [NavigationExtension::SECTION],
-            ['note' => 'First'],
+            [],
             new Editor(4, 'Ann Editor'),
         );
-        $this->answer(PublishHandler::class, ['menu' => $this->menu], ['note' => '']);
+        $this->answer(PublishHandler::class, ['menu' => $this->menu], []);
 
         static::assertSame(
             [
-                ['id' => 2, 'published' => '23 Oct 2026, 9:00 am', 'by' => null, 'note' => null, 'live' => true],
+                ['id' => 2, 'published' => '23 Oct 2026, 9:00am', 'by' => null, 'note' => null, 'live' => true],
                 [
                     'id'        => 1,
-                    'published' => '23 Oct 2026, 9:00 am',
+                    'published' => '23 Oct 2026, 9:00am',
                     'by'        => 'Ann Editor',
-                    'note'      => 'First',
+                    'note'      => null,
                     'live'      => false,
                 ],
             ],
@@ -141,34 +213,7 @@ final class PublishingHandlersTest extends TestCase
     }
 
     #[Test]
-    public function publishingANoteTooLongSaysWhy(): void
-    {
-        $result = $this->answer(
-            PublishHandler::class,
-            ['menu' => $this->menu],
-            ['note' => str_repeat('a', times: 256)],
-        );
-
-        static::assertSame('danger', $result->messages[0]['level'] ?? null);
-    }
-
-    #[Test]
-    public function publishingMakesTheDraftLiveWithItsNote(): void
-    {
-        $result = $this->answer(PublishHandler::class, ['menu' => $this->menu], ['note' => 'Added Shop']);
-
-        static::assertSame(
-            [[['level' => 'success', 'text' => 'Menu published.']], 'Added Shop', 1],
-            [
-                $result->messages,
-                $this->menus()->repository->revision(1)->note,
-                $this->menus()->repository->navigation($this->menu)->revisionId,
-            ],
-        );
-    }
-
-    #[Test]
-    public function publishingNeedsApproveSoAnEditorCanDraftWithoutMakingItLive(): void
+    public function publishingAMenuTheFirstTimeNeedsApprove(): void
     {
         static::assertSame(
             [403, 302],
@@ -202,7 +247,22 @@ final class PublishingHandlersTest extends TestCase
     }
 
     #[Test]
-    public function restoringCopiesARevisionIntoTheDraft(): void
+    public function publishingPutsTheMenuOnTheSite(): void
+    {
+        $result = $this->answer(PublishHandler::class, ['menu' => $this->menu], []);
+
+        static::assertSame(
+            [[['level' => 'success', 'text' => 'Menu published.']], null, 1],
+            [
+                $result->messages,
+                $this->menus()->repository->revision(1)->note,
+                $this->menus()->repository->navigation($this->menu)->revisionId,
+            ],
+        );
+    }
+
+    #[Test]
+    public function restoringARevisionOfALiveMenuPutsItBackOnTheSite(): void
     {
         $this->answer(PublishHandler::class, ['menu' => $this->menu], []);
         $this->item($this->menu, Item::text('Sale'), position: 1);
@@ -211,8 +271,13 @@ final class PublishingHandlersTest extends TestCase
         $result = $this->answer(RestoreHandler::class, ['revision' => 1], []);
 
         static::assertSame(
-            ['/admin/extension/navigation/menus?menu=1', 1],
-            [$result->url, count($this->menus()->repository->items($this->menu))],
+            ['/admin/extension/navigation/menus?menu=1', 'Revision restored and live.', 1, 3],
+            [
+                $result->url,
+                $result->messages[0]['text'] ?? null,
+                count($this->menus()->repository->items($this->menu)),
+                $this->menus()->repository->navigation($this->menu)->revisionId,
+            ],
         );
     }
 

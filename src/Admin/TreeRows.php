@@ -17,8 +17,8 @@ use function sprintf;
 
 /**
  * A menu's tree as the Navigation screen draws it: each item's label,
- * icon and path, a badge where the site won't show it as it is, how it is
- * drawn, and the items nested under it. A record item is described by the
+ * icon and path, a badge where the site won't show it as it is, whether it
+ * is shown, how it is drawn, and the items nested under it. A record item is described by the
  * host's records, so its title, path and status are the record's own.
  */
 final readonly class TreeRows
@@ -121,19 +121,20 @@ final readonly class TreeRows
     }
 
     /**
-     * @return array{id: int, label: string, icon: string, path: string|null, badge: string|null, drawn: string}
+     * @return array{id: int, label: string, icon: string, path: string|null, badge: string|null, active: bool, drawn: string}
      */
     private function row(Item $item): array
     {
         [$label, $icon, $path, $badge] = $this->link($item);
 
         return [
-            'id'    => (int) $item->id,
-            'label' => $label,
-            'icon'  => $icon,
-            'path'  => $path,
-            'badge' => $item->active ? $badge : 'Hidden',
-            'drawn' => self::drawn($item),
+            'id'     => (int) $item->id,
+            'label'  => $label,
+            'icon'   => $icon,
+            'path'   => $path,
+            'badge'  => $item->active ? $badge : 'Hidden',
+            'active' => $item->active,
+            'drawn'  => self::drawn($item),
         ];
     }
 }

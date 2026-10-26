@@ -52,6 +52,7 @@ final class ItemMoveHandler implements HandlerInterface
                 default => [$input->id('parent'), (int) $input->posted('position')],
             };
             $menus->repository->moveItem((int) $item->id, $parent, $position);
+            $menus->publishIfLive((int) $item->navigationId);
         } catch (NotFoundException) {
             return HandlerResult::redirect(Urls::menu(null))->withMessage('warning', 'That item no longer exists.');
         } catch (InvalidItemException $problem) {

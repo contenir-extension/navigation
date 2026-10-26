@@ -8,16 +8,17 @@ use Contenir\Extension\Api\ExtensionInterface;
 use Contenir\Extension\Api\Handler\HandlerInterface;
 use Contenir\Extension\Api\Handler\Privilege;
 use Contenir\Extension\Api\Registry;
-use Contenir\Extension\Navigation\Admin\DiscardHandler;
 use Contenir\Extension\Navigation\Admin\HistoryHandler;
 use Contenir\Extension\Navigation\Admin\ItemAddHandler;
 use Contenir\Extension\Navigation\Admin\ItemDeleteHandler;
 use Contenir\Extension\Navigation\Admin\ItemEditHandler;
 use Contenir\Extension\Navigation\Admin\ItemMoveHandler;
+use Contenir\Extension\Navigation\Admin\ItemVisibilityHandler;
 use Contenir\Extension\Navigation\Admin\MenuAddHandler;
 use Contenir\Extension\Navigation\Admin\MenuDeleteHandler;
 use Contenir\Extension\Navigation\Admin\MenuEditHandler;
 use Contenir\Extension\Navigation\Admin\MenusHandler;
+use Contenir\Extension\Navigation\Admin\MenusMenu;
 use Contenir\Extension\Navigation\Admin\PublishHandler;
 use Contenir\Extension\Navigation\Admin\RestoreHandler;
 use Override;
@@ -27,7 +28,7 @@ use function dirname;
 /**
  * Managed site navigation: the Navigation section of Site Pages, where
  * editors build the site's menus as drafts, publish them, and restore older
- * revisions. Every screen is guarded by that section. The navigation tables
+ * revisions. Site Pages' section menu lists each menu in the section's place. Every screen is guarded by that section. The navigation tables
  * belong to contenir/contenir-navigation, whose migrations the CMS runs
  * against the site's database.
  */
@@ -47,19 +48,19 @@ final readonly class NavigationExtension implements ExtensionInterface
      *
      * @var array<string, array{class-string<HandlerInterface>, Privilege}>
      */
-    private const array SCREENS = [
-        MenusHandler::NAME      => [MenusHandler::class, Privilege::View],
-        MenuAddHandler::NAME    => [MenuAddHandler::class, Privilege::Add],
-        MenuEditHandler::NAME   => [MenuEditHandler::class, Privilege::Update],
-        MenuDeleteHandler::NAME => [MenuDeleteHandler::class, Privilege::Delete],
-        ItemAddHandler::NAME    => [ItemAddHandler::class, Privilege::Add],
-        ItemEditHandler::NAME   => [ItemEditHandler::class, Privilege::Update],
-        ItemMoveHandler::NAME   => [ItemMoveHandler::class, Privilege::Update],
-        ItemDeleteHandler::NAME => [ItemDeleteHandler::class, Privilege::Delete],
-        PublishHandler::NAME    => [PublishHandler::class, Privilege::Approve],
-        DiscardHandler::NAME    => [DiscardHandler::class, Privilege::Update],
-        HistoryHandler::NAME    => [HistoryHandler::class, Privilege::View],
-        RestoreHandler::NAME    => [RestoreHandler::class, Privilege::Update],
+    public const array SCREENS = [
+        MenusHandler::NAME          => [MenusHandler::class, Privilege::View],
+        MenuAddHandler::NAME        => [MenuAddHandler::class, Privilege::Add],
+        MenuEditHandler::NAME       => [MenuEditHandler::class, Privilege::Update],
+        MenuDeleteHandler::NAME     => [MenuDeleteHandler::class, Privilege::Delete],
+        ItemAddHandler::NAME        => [ItemAddHandler::class, Privilege::Add],
+        ItemEditHandler::NAME       => [ItemEditHandler::class, Privilege::Update],
+        ItemMoveHandler::NAME       => [ItemMoveHandler::class, Privilege::Update],
+        ItemDeleteHandler::NAME     => [ItemDeleteHandler::class, Privilege::Delete],
+        ItemVisibilityHandler::NAME => [ItemVisibilityHandler::class, Privilege::Update],
+        PublishHandler::NAME        => [PublishHandler::class, Privilege::Approve],
+        HistoryHandler::NAME        => [HistoryHandler::class, Privilege::View],
+        RestoreHandler::NAME        => [RestoreHandler::class, Privilege::Update],
     ];
 
     /**
@@ -73,6 +74,7 @@ final readonly class NavigationExtension implements ExtensionInterface
     {
         $root = dirname(__DIR__);
         $registry->module("{$root}/config/admin.xml");
+        $registry->menu(MenusMenu::class);
         $registry->templates("{$root}/templates");
         $registry->assets("{$root}/public");
         $registry->component(self::TREE_COMPONENT, 'js/MenuTree.js');

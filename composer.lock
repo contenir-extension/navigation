@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "03a104a4482e05ad95eac47028bfdbc2",
+    "content-hash": "c9e88ad561c0d0eb4580aed3a41cda18",
     "packages": [
         {
             "name": "brick/varexporter",
@@ -57,16 +57,16 @@
         },
         {
             "name": "contenir/contenir-extension-api",
-            "version": "v0.7.2",
+            "version": "v0.7.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contenir/contenir-extension-api.git",
-                "reference": "6743736fb31e31b207d36fcbfbcaecc3eef7ece4"
+                "reference": "029a68861af2469d153f98d3bb916f59b67041c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contenir/contenir-extension-api/zipball/6743736fb31e31b207d36fcbfbcaecc3eef7ece4",
-                "reference": "6743736fb31e31b207d36fcbfbcaecc3eef7ece4",
+                "url": "https://api.github.com/repos/contenir/contenir-extension-api/zipball/029a68861af2469d153f98d3bb916f59b67041c6",
+                "reference": "029a68861af2469d153f98d3bb916f59b67041c6",
                 "shasum": ""
             },
             "require": {
@@ -125,20 +125,20 @@
                 "issues": "https://github.com/contenir/contenir-extension-api/issues",
                 "source": "https://github.com/contenir/contenir-extension-api"
             },
-            "time": "2026-10-25T04:32:36+00:00"
+            "time": "2026-10-26T06:01:49+00:00"
         },
         {
             "name": "contenir/contenir-navigation",
-            "version": "v0.1.0",
+            "version": "v0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/contenir/contenir-navigation.git",
-                "reference": "7a53d8c7d918234a4a73f07c4ce969a9e44b68a4"
+                "reference": "a92c510231ed71e708ed489629568ae200494b3a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/contenir/contenir-navigation/zipball/7a53d8c7d918234a4a73f07c4ce969a9e44b68a4",
-                "reference": "7a53d8c7d918234a4a73f07c4ce969a9e44b68a4",
+                "url": "https://api.github.com/repos/contenir/contenir-navigation/zipball/a92c510231ed71e708ed489629568ae200494b3a",
+                "reference": "a92c510231ed71e708ed489629568ae200494b3a",
                 "shasum": ""
             },
             "require": {
@@ -189,7 +189,7 @@
                 "issues": "https://github.com/contenir/contenir-navigation/issues",
                 "source": "https://github.com/contenir/contenir-navigation"
             },
-            "time": "2026-10-25T04:32:49+00:00"
+            "time": "2026-10-26T06:21:14+00:00"
         },
         {
             "name": "laminas/laminas-servicemanager",

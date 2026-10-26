@@ -7,7 +7,7 @@ import { build } from 'esbuild'
  * Build the add-on's dashboard scripts into public/js, which is committed:
  * one ES module per component in assets/js/components, each
  * default-exporting its component class for the host's registry to mount,
- * with the code they share (BaseComponent, SortableJS) split into
+ * with the code they share (BaseComponent) split into
  * public/js/chunks/. The stylesheet in public/css is written by hand.
  *
  * The output must depend on the sources alone, so CI can rebuild and diff

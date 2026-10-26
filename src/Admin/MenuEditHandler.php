@@ -21,7 +21,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Renames a menu, changes its handle or says where it appears.
+ * Renames a menu, changes its identifier or says where it appears.
  */
 final class MenuEditHandler implements HandlerInterface
 {
@@ -32,12 +32,12 @@ final class MenuEditHandler implements HandlerInterface
      *
      * @throws InvalidDeclarationException Never: the form's fields are fixed.
      */
-    private static function screen(Navigation $menu, array $values): HandlerResult
+    private static function screen(Navigation $menu, array $values, ?string $shared): HandlerResult
     {
         return HandlerResult::screen(new Screen(
             "Edit {$menu->title}",
-            'Changing the handle changes what the site\'s templates ask for, so do it with the templates.',
-            MenuForm::of($values),
+            'Changing the identifier changes what the site\'s templates ask for, so do it with the templates.',
+            MenuForm::of($values, $shared),
             parent: new ParentPage('Navigation', MenusHandler::NAME, ['menu' => (int) $menu->id]),
         ));
     }
@@ -62,19 +62,31 @@ final class MenuEditHandler implements HandlerInterface
         }
 
         if ('POST' !== $request->getMethod()) {
-            return self::screen($menu, [
-                'title'       => $menu->title,
-                'handle'      => $menu->handle,
-                'description' => $menu->description,
-            ]);
+            return self::screen(
+                $menu,
+                [
+                    'title'       => $menu->title,
+                    'handle'      => $menu->handle,
+                    'description' => $menu->description,
+                ],
+                MenuForm::shared($menus->repository, $menu->handle, $menu->id),
+            );
         }
 
         try {
-            $menus->repository->saveNavigation(MenuForm::posted($input, $menu));
+            $saved = $menus->repository->saveNavigation(MenuForm::posted($input, $menu));
         } catch (InvalidItemException $problem) {
-            return self::screen($menu, MenuForm::values($input))->withMessage('danger', $problem->getMessage());
+            $values = MenuForm::values($input);
+
+            return self::screen($menu, $values, MenuForm::shared($menus->repository, $values['handle'], $menu->id))
+                ->withMessage('danger', $problem->getMessage());
         }
 
-        return HandlerResult::redirect(Urls::menu($menu->id))->withMessage('success', 'Menu saved.');
+        $shared = MenuForm::shared($menus->repository, $saved->handle, $saved->id);
+
+        return HandlerResult::redirect(Urls::menu($menu->id))->withMessage(
+            null === $shared ? 'success' : 'warning',
+            null === $shared ? 'Menu saved.' : "Menu saved. {$shared}",
+        );
     }
 }

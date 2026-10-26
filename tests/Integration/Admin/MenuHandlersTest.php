@@ -16,18 +16,49 @@ use Contenir\Extension\Navigation\Tests\Trait\NavigationHostTrait;
 use Contenir\Navigation\Menu\Item;
 use Contenir\Navigation\Menu\Navigation;
 use Override;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 use function array_map;
 use function count;
+use function str_contains;
 
 #[Group('integration')]
 #[Group('handler')]
 final class MenuHandlersTest extends TestCase
 {
     use NavigationHostTrait;
+
+    /**
+     * @return array<string, array{list<array{string, string, bool}>, string|null}>
+     */
+    public static function sharedProvider(): array
+    {
+        return [
+            'no other menu has it'            => [[['footer', 'Footer', false]], null],
+            'an unpublished one has it'       => [
+                [['header', 'Header', false]],
+                'Also the identifier of menu "Header". None of them is published yet.',
+            ],
+            'an earlier published one has it' => [
+                [['header', 'Header', true]],
+                'Also the identifier of menu "Header". The site shows "Header", the first published in menu order.',
+            ],
+            'this is the one the site shows'  => [
+                [['header', 'Header', false]],
+                'Also the identifier of menu "Header". The site shows this one, the first published in menu order.',
+            ],
+            'two others have it'              => [
+                [
+                    ['header', 'Header',       false],
+                    ['header', 'Header (old)', false],
+                ],
+                'Also the identifier of menus "Header", "Header (old)". None of them is published yet.',
+            ],
+        ];
+    }
 
     /**
      * @return list<string>
@@ -84,6 +115,23 @@ final class MenuHandlersTest extends TestCase
     }
 
     #[Test]
+    public function addingAMenuWithAHandleAnotherHasSaysWhichTheSiteShows(): void
+    {
+        $header = $this->menu('header');
+        $this->answer(PublishHandler::class, ['menu' => $header], []);
+
+        $result = $this->answer(MenuAddHandler::class, posted: ['title' => 'Header (copy)', 'handle' => 'header']);
+
+        static::assertSame(
+            [[
+                'level' => 'warning',
+                'text' => 'Menu added. Also the identifier of menu "Header". The site shows "Header", the first published in menu order.',
+            ]],
+            $result->messages,
+        );
+    }
+
+    #[Test]
     public function addingMenusNeedsAddAndDeletingThemDelete(): void
     {
         $menu = $this->menu();
@@ -110,7 +158,7 @@ final class MenuHandlersTest extends TestCase
     }
 
     #[Test]
-    public function aHandleAnotherMenuHasIsRefused(): void
+    public function aHandleAnotherMenuHasIsSavedWithAWarning(): void
     {
         $this->menu('header');
         $footer = $this->menu('footer', 'Footer');
@@ -122,8 +170,14 @@ final class MenuHandlersTest extends TestCase
         );
 
         static::assertSame(
-            [['level' => 'danger', 'text' => 'Another menu already has the handle "header"']],
-            $result->messages,
+            [
+                [[
+                    'level' => 'warning',
+                    'text'  => 'Menu saved. Also the identifier of menu "Header". None of them is published yet.',
+                ]],
+                'header',
+            ],
+            [$result->messages, $this->menus()->repository->navigation($footer)->handle],
         );
     }
 
@@ -135,6 +189,19 @@ final class MenuHandlersTest extends TestCase
         static::assertSame(
             [ResultKind::Screen, 'Main Menu', 'danger'],
             [$result->kind, $result->screen?->form?->field('handle')?->default, $result->messages[0]['level'] ?? null],
+        );
+    }
+
+    #[Test]
+    public function aRefusedMenuIsShownAgainWarningAboutItsHandle(): void
+    {
+        $this->menu('header');
+
+        $result = $this->answer(MenuAddHandler::class, posted: ['title' => '', 'handle' => 'header']);
+
+        static::assertSame(
+            'Also the identifier of menu "Header". None of them is published yet.',
+            $result->screen?->form?->field('handle')?->attributes['warning'] ?? null,
         );
     }
 
@@ -221,6 +288,32 @@ final class MenuHandlersTest extends TestCase
             ['/admin/extension/navigation/menus', [['level' => 'warning', 'text' => 'That menu no longer exists.']]],
             [$result->url, $result->messages],
         );
+    }
+
+    /**
+     * Edits a header menu added after $others, published when the case says this is the one the site
+     * shows, and expects the handle field to warn $warning.
+     *
+     * @param list<array{string, string, bool}> $others Each other menu's handle, title and whether it is published
+     */
+    #[Test]
+    #[DataProvider('sharedProvider')]
+    public function editingAMenuWarnsBesideAHandleOthersShare(array $others, ?string $warning): void
+    {
+        foreach ($others as [$handle, $title, $published]) {
+            $other = $this->menu($handle, $title);
+            if ($published) {
+                $this->answer(PublishHandler::class, ['menu' => $other], []);
+            }
+        }
+        $menu = $this->menu('header', 'Main');
+        if (null !== $warning && str_contains($warning, 'this one')) {
+            $this->answer(PublishHandler::class, ['menu' => $menu], []);
+        }
+
+        $result = $this->answer(MenuEditHandler::class, ['menu' => $menu]);
+
+        static::assertSame($warning, $result->screen?->form?->field('handle')?->attributes['warning'] ?? null);
     }
 
     #[Override]

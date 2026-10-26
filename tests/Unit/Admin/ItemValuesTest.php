@@ -45,16 +45,15 @@ final class ItemValuesTest extends TestCase
 
         static::assertSame(
             [
-                'link'     => 'record:page:4',
-                'label'    => 'Team',
-                'fragment' => 'staff',
-                'html'     => null,
-                'parent'   => '3',
-                'display'  => 'icon',
-                'icon'     => 'people',
-                'new_tab'  => true,
-                'class'    => 'x',
-                'active'   => false,
+                'link'    => 'record:page:4#staff',
+                'label'   => 'Team',
+                'html'    => null,
+                'parent'  => '3',
+                'display' => 'icon',
+                'icon'    => 'people',
+                'new_tab' => true,
+                'class'   => 'x',
+                'active'  => false,
             ],
             ItemValues::of($item),
         );
@@ -64,13 +63,12 @@ final class ItemValuesTest extends TestCase
     public function showsEverythingThatWasPosted(): void
     {
         $posted = [
-            'label'    => 'Shop',
-            'fragment' => 'top',
-            'html'     => '<b>x</b>',
-            'parent'   => '2',
-            'display'  => 'icon_label',
-            'icon'     => 'cart',
-            'class'    => 'y',
+            'label'   => 'Shop',
+            'html'    => '<b>x</b>',
+            'parent'  => '2',
+            'display' => 'icon_label',
+            'icon'    => 'cart',
+            'class'   => 'y',
         ];
 
         static::assertSame(

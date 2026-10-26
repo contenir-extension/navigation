@@ -7,6 +7,7 @@ namespace Contenir\Extension\Navigation\Tests\Unit;
 use Contenir\Extension\Api\Handler\HandlerDeclaration;
 use Contenir\Extension\Api\Registration;
 use Contenir\Extension\Api\Registry;
+use Contenir\Extension\Navigation\Admin\MenusMenu;
 use Contenir\Extension\Navigation\NavigationExtension;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -44,24 +45,30 @@ final class NavigationExtensionTest extends TestCase
     {
         static::assertSame(
             [
-                'menus'       => 'view',
-                'menu-add'    => 'add',
-                'menu-edit'   => 'update',
-                'menu-delete' => 'delete',
-                'item-add'    => 'add',
-                'item-edit'   => 'update',
-                'item-move'   => 'update',
-                'item-delete' => 'delete',
-                'publish'     => 'approve',
-                'discard'     => 'update',
-                'history'     => 'view',
-                'restore'     => 'update',
+                'menus'           => 'view',
+                'menu-add'        => 'add',
+                'menu-edit'       => 'update',
+                'menu-delete'     => 'delete',
+                'item-add'        => 'add',
+                'item-edit'       => 'update',
+                'item-move'       => 'update',
+                'item-delete'     => 'delete',
+                'item-visibility' => 'update',
+                'publish'         => 'approve',
+                'history'         => 'view',
+                'restore'         => 'update',
             ],
             array_map(
                 static fn(HandlerDeclaration $handler): ?string => $handler->privilege?->value,
                 self::registration()->handlers,
             ),
         );
+    }
+
+    #[Test]
+    public function listsEachMenuInSitePagesSectionMenu(): void
+    {
+        static::assertSame(MenusMenu::class, self::registration()->module?->menu);
     }
 
     #[Test]

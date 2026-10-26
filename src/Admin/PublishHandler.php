@@ -17,8 +17,9 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * Makes a menu's draft live, when posted, as a revision recording who
- * published it and the note they gave.
+ * Puts a menu on the site, when posted, as a revision recording who
+ * published it. A menu is published once: after that every change to it
+ * publishes itself as it is saved.
  */
 final class PublishHandler implements HandlerInterface
 {
@@ -41,7 +42,7 @@ final class PublishHandler implements HandlerInterface
         $menus = Menus::of($context);
 
         try {
-            $menus->publisher->publish($id, $menus->publisher(), $input->postedOrNull('note'));
+            $menus->publisher->publish($id, $menus->publisher());
         } catch (NotFoundException) {
             return HandlerResult::redirect(Urls::menu(null))->withMessage('warning', 'That menu no longer exists.');
         } catch (InvalidItemException $problem) {

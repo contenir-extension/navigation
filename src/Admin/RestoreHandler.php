@@ -8,6 +8,7 @@ use Contenir\Extension\Api\Context\ExtensionContextInterface;
 use Contenir\Extension\Api\Handler\HandlerInterface;
 use Contenir\Extension\Api\Handler\HandlerResult;
 use Contenir\Extension\Navigation\Persistence\Menus;
+use Contenir\Navigation\Exception\InvalidItemException;
 use Contenir\Navigation\Exception\NotFoundException;
 use Contenir\Navigation\Exception\StorageException;
 use LogicException;
@@ -40,13 +41,19 @@ final class RestoreHandler implements HandlerInterface
         try {
             $revision = $menus->repository->revision($id);
             $menus->publisher->restore($id);
+            $live = $menus->publishIfLive($revision->navigationId);
         } catch (NotFoundException) {
             return HandlerResult::redirect(Urls::menu(null))->withMessage('warning', 'That revision no longer exists.');
+        } catch (InvalidItemException $problem) {
+            return HandlerResult::redirect(Urls::menu($revision->navigationId))->withMessage(
+                'danger',
+                $problem->getMessage(),
+            );
         }
 
         return HandlerResult::redirect(Urls::menu($revision->navigationId))->withMessage(
             'success',
-            'Revision restored into the draft. Publish the menu to make it live.',
+            $live ? 'Revision restored and live.' : 'Revision restored into the draft.',
         );
     }
 }

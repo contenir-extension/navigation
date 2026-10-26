@@ -1,47 +1,66 @@
 <?php
 /**
- * One level of a menu's tree: each item's grip, icon, label and path, a badge where the site won't
- * show it as it is, and its actions (edit, add an item under it, move it up or down, delete it), with
- * the items nested under it drawn the same way. Every item holds a list for the items under it, empty
- * when it has none, so the MenuTree component can drag an item under any other.
+ * One level of a menu's tree, each item an action bar as Site Pages draws a page: its grip, a
+ * toggle for the items under it, its icon beside its label and path with a badge where the site
+ * won't show it as it is, a switch that shows or hides it, Edit, and a menu of the rest (add an
+ * item under it, delete it). The items nested under it are drawn the same way, in a list of their
+ * own. The top list is the dashboard's sortable action bar tree: an item is dragged by its grip, or
+ * moved with the keyboard, to another place or under another item, and MenuTree posts the move.
  *
- * @var array{menu: int, parent: int|null, rows: list<array<string, mixed>>} $values
+ * @var array{menu: int, parent: int|null, label?: string, rows: list<array<string, mixed>>} $values
  * @var \Contenir\Extension\Api\Module\TemplateHelpersInterface $view
  */
-$last = count($values['rows']) - 1;
 ?>
-                        <ul class="list list--boxed navtree<?php if ([] === $values['rows']): ?> navtree--empty<?php endif ?>" data-navtree data-menu="<?= $values['menu'] ?>" data-parent="<?= $values['parent'] ?? '' ?>">
-<?php foreach ($values['rows'] as $position => $row): ?>
+<?php if (null === $values['parent']): ?>
+                        <ul class="actionbar__list navtree" aria-label="Menu items" data-navtree data-actionbar-sortable="tree">
+<?php else: ?>
+                        <ul class="actionbar__list" id="item-<?= $values['parent'] ?>-children" aria-label="Items under <?= $view->escape((string) ($values['label'] ?? '')) ?>">
+<?php endif ?>
+<?php foreach ($values['rows'] as $row): ?>
 <?php
-    /** @var array{id: int, label: string, icon: string, path: string|null, badge: string|null, drawn: string, children: list<array<string, mixed>>} $row */
-    $item = $row['id'];
+    /** @var array{id: int, label: string, icon: string, path: string|null, badge: string|null, active: bool, drawn: string, children: list<array<string, mixed>>} $row */
+    $item  = $row['id'];
+    $label = $view->escape($row['label']);
+    $edit  = $view->escape($view->url('item-edit', ['item' => $item]));
 ?>
-                            <li class="list__item navtree__item" data-navtree-item data-move-url="<?= $view->escape($view->url('item-move', ['item' => $item])) ?>">
-                                <span class="navtree__handle" data-navtree-handle aria-hidden="true"><?= $view->icon('grip-vertical') ?></span>
-                                <div class="list__body">
-                                    <div class="list__title"><?= $view->icon($row['icon']) ?> <?= $view->escape($row['label']) ?><?php if (null !== $row['badge']): ?> <span class="badge badge--warning-muted"><?= $view->escape($row['badge']) ?></span><?php endif ?></div>
+                            <li id="item-<?= $item ?>" data-item="<?= $item ?>" data-move-url="<?= $view->escape($view->url('item-move', ['item' => $item])) ?>">
+                                <div class="actionbar">
+                                    <button type="button" class="actionbar__segment actionbar__handle" aria-label="Reorder <?= $label ?>"><?= $view->icon('grip-vertical') ?></button>
+<?php if ([] === $row['children']): ?>
+                                    <span class="actionbar__segment actionbar__toggle" aria-hidden="true"></span>
+<?php else: ?>
+                                    <button type="button" class="actionbar__segment actionbar__toggle" aria-expanded="true" aria-controls="item-<?= $item ?>-children" aria-label="Show the items under <?= $label ?>"><?= $view->icon('chevron-down') ?></button>
+<?php endif ?>
+                                    <div class="actionbar__segment actionbar__title">
+                                        <?= $view->icon($row['icon']) ?>
+                                        <a href="<?= $edit ?>" class="actionbar__label"><?= $label ?></a>
 <?php if (null !== $row['path']): ?>
-                                    <div class="list__description navtree__path"><?= $view->escape($row['path']) ?></div>
+                                        <span class="actionbar__meta navtree__path"><?= $view->escape($row['path']) ?></span>
 <?php endif ?>
-                                    <?= $view->render('navigation/tree', ['menu' => $values['menu'], 'parent' => $item, 'rows' => $row['children']]) ?>
-                                </div>
-                                <div class="list__actions cluster cluster--gap-xs">
-                                    <a class="btn btn--ghost btn--icon btn--sm" href="<?= $view->escape($view->url('item-edit', ['item' => $item])) ?>" aria-label="Edit <?= $view->escape($row['label']) ?>" data-tooltip="Edit"><?= $view->icon('pencil') ?></a>
-                                    <a class="btn btn--ghost btn--icon btn--sm" href="<?= $view->escape($view->url('item-add', ['menu' => $values['menu'], 'parent' => $item])) ?>" aria-label="Add an item under <?= $view->escape($row['label']) ?>" data-tooltip="Add under"><?= $view->icon('plus') ?></a>
-<?php foreach (['up' => [0 < $position, 'arrow-up', 'Move up'], 'down' => [$position < $last, 'arrow-down', 'Move down']] as $direction => [$can, $icon, $label]): ?>
-<?php if ($can): ?>
-                                    <form method="post" action="<?= $view->escape($view->url('item-move', ['item' => $item])) ?>">
-                                        <?= $view->token() ?>
-                                        <input type="hidden" name="direction" value="<?= $direction ?>">
-                                        <button type="submit" class="btn btn--ghost btn--icon btn--sm" aria-label="<?= $label ?>: <?= $view->escape($row['label']) ?>" data-tooltip="<?= $label ?>"><?= $view->icon($icon) ?></button>
-                                    </form>
+<?php if (null !== $row['badge']): ?>
+                                        <span class="badge badge--sm badge--warning-muted"><?= $view->escape($row['badge']) ?></span>
 <?php endif ?>
-<?php endforeach ?>
-                                    <form method="post" action="<?= $view->escape($view->url('item-delete', ['item' => $item])) ?>" onsubmit="return confirm('Delete this item and everything under it? The page or record it links to is kept.')">
+                                    </div>
+                                    <form method="post" action="<?= $view->escape($view->url('item-visibility', ['item' => $item])) ?>" class="actionbar__segment" data-priority="low" data-label="<?= $row['active'] ? 'Shown' : 'Hidden' ?>">
                                         <?= $view->token() ?>
-                                        <button type="submit" class="btn btn--ghost btn--icon btn--sm" aria-label="Delete <?= $view->escape($row['label']) ?>" data-tooltip="Delete"><?= $view->icon('trash') ?></button>
+                                        <label class="switch switch--sm"><input type="checkbox" class="switch__input" role="switch" name="active" value="1"<?= $row['active'] ? ' checked' : '' ?> data-navtree-visibility aria-label="Show <?= $label ?> on the site"><span class="switch__label">Show</span></label>
                                     </form>
+                                    <a href="<?= $edit ?>" class="actionbar__segment"><?= $view->icon('pencil') ?><span>Edit</span></a>
+                                    <div class="actionbar__segment dropdown">
+                                        <button type="button" class="actionbar__trigger dropdown__trigger" aria-haspopup="menu" aria-label="More for <?= $label ?>" data-toggle data-toggle-target="#item-<?= $item ?>-more" data-toggle-capture="true"><?= $view->icon('dots-vertical') ?></button>
+                                        <div class="dropdown__menu dropdown__menu--right" id="item-<?= $item ?>-more" role="menu">
+                                            <a class="dropdown__item" role="menuitem" href="<?= $view->escape($view->url('item-add', ['menu' => $values['menu'], 'parent' => $item])) ?>"><?= $view->icon('plus') ?><span class="dropdown__item-text">Add item below</span></a>
+                                            <div class="dropdown__divider" role="separator"></div>
+                                            <form method="post" action="<?= $view->escape($view->url('item-delete', ['item' => $item])) ?>" data-confirm="Delete this item and everything under it? The page or record it links to is kept." data-confirm-title="Delete item?" data-confirm-button="Delete" data-confirm-tone="destructive">
+                                                <?= $view->token() ?>
+                                                <button type="submit" class="dropdown__item dropdown__item--destructive" role="menuitem"><?= $view->icon('trash') ?><span class="dropdown__item-text">Delete</span></button>
+                                            </form>
+                                        </div>
+                                    </div>
                                 </div>
+<?php if ([] !== $row['children']): ?>
+                                <?= $view->render('navigation/tree', ['menu' => $values['menu'], 'parent' => $item, 'label' => $row['label'], 'rows' => $row['children']]) ?>
+<?php endif ?>
                             </li>
 <?php endforeach ?>
                         </ul>

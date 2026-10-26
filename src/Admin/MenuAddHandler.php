@@ -34,12 +34,12 @@ final class MenuAddHandler implements HandlerInterface
      *
      * @throws InvalidDeclarationException Never: the form's fields are fixed.
      */
-    private static function screen(array $values): HandlerResult
+    private static function screen(array $values, ?string $shared = null): HandlerResult
     {
         return HandlerResult::screen(new Screen(
             'Add menu',
             'A menu is a list of links the site draws in one place, such as its header or footer.',
-            MenuForm::of($values),
+            MenuForm::of($values, $shared),
             parent: new ParentPage('Navigation', MenusHandler::NAME),
         ));
     }
@@ -70,9 +70,17 @@ final class MenuAddHandler implements HandlerInterface
                 count($menus->repository->navigations()),
             ));
         } catch (InvalidItemException $problem) {
-            return self::screen(MenuForm::values($input))->withMessage('danger', $problem->getMessage());
+            $values = MenuForm::values($input);
+
+            return self::screen($values, MenuForm::shared($menus->repository, $values['handle']))
+                ->withMessage('danger', $problem->getMessage());
         }
 
-        return HandlerResult::redirect(Urls::menu($menu->id))->withMessage('success', 'Menu added.');
+        $shared = MenuForm::shared($menus->repository, $menu->handle, $menu->id);
+
+        return HandlerResult::redirect(Urls::menu($menu->id))->withMessage(
+            null === $shared ? 'success' : 'warning',
+            null === $shared ? 'Menu added.' : "Menu added. {$shared}",
+        );
     }
 }
