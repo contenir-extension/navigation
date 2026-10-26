@@ -45,7 +45,7 @@ $menu = $values['menu'];
                 </div>
 <?php else: ?>
 <?php $state = $menu['state']; ?>
-                <nav class="tabs tabs--pills mb--md" aria-label="Menus">
+                <nav class="tabs tabs--underline mb--md" aria-label="Menus">
                     <div class="tabs__list">
 <?php foreach ($values['menus'] as $tab): ?>
                         <a class="tabs__trigger<?= $tab['current'] ? ' tabs__trigger--active' : '' ?>" href="<?= $view->escape($view->url('menus', ['menu' => $tab['id']])) ?>"<?php if ($tab['current']): ?> aria-current="page"<?php endif ?>><span><?= $view->escape($tab['title']) ?></span></a>
