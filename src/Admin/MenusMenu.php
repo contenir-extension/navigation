@@ -8,6 +8,7 @@ use Contenir\Extension\Api\Context\ExtensionContextInterface;
 use Contenir\Extension\Api\Module\MenuGroup;
 use Contenir\Extension\Api\Module\MenuInterface;
 use Contenir\Extension\Api\Module\MenuItem;
+use Contenir\Extension\Navigation\NavigationExtension;
 use Contenir\Extension\Navigation\Persistence\Menus;
 use Contenir\Navigation\Exception\NotFoundException;
 use Contenir\Navigation\Exception\StorageException;
@@ -18,8 +19,9 @@ use Override;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
+use function array_key_exists;
+use function basename;
 use function count;
-use function str_ends_with;
 
 /**
  * The Navigation section's part of Site Pages' section menu: each of the
@@ -33,8 +35,9 @@ final class MenusMenu implements MenuInterface
     public const string TITLE = 'Navigation';
 
     /**
-     * The menu $request is about: the one it names, the one holding the item
-     * it names, or $first on the Navigation screen.
+     * The menu $request is about, when it is to one of the add-on's screens:
+     * the one it names, the one holding the item it names, or $first on the
+     * Navigation screen.
      *
      * @throws StorageException When the item can't be read.
      */
@@ -43,6 +46,11 @@ final class MenusMenu implements MenuInterface
         NavigationRepositoryInterface $repository,
         Navigation $first,
     ): ?int {
+        $screen = basename($request->getUri()->getPath());
+        if (! array_key_exists($screen, NavigationExtension::SCREENS)) {
+            return null;
+        }
+
         $input = Input::of($request);
         $item  = $input->id('item');
         if (null !== $item) {
@@ -53,10 +61,7 @@ final class MenusMenu implements MenuInterface
             }
         }
 
-        return (
-            $input->id('menu')
-                ?? (str_ends_with($request->getUri()->getPath(), '/' . MenusHandler::NAME) ? $first->id : null)
-        );
+        return $input->id('menu') ?? (MenusHandler::NAME === $screen ? $first->id : null);
     }
 
     /**

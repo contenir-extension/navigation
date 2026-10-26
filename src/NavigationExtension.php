@@ -48,7 +48,7 @@ final readonly class NavigationExtension implements ExtensionInterface
      *
      * @var array<string, array{class-string<HandlerInterface>, Privilege}>
      */
-    private const array SCREENS = [
+    public const array SCREENS = [
         MenusHandler::NAME          => [MenusHandler::class, Privilege::View],
         MenuAddHandler::NAME        => [MenuAddHandler::class, Privilege::Add],
         MenuEditHandler::NAME       => [MenuEditHandler::class, Privilege::Update],

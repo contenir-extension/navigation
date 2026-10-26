@@ -31,12 +31,13 @@ final class MenusMenuTest extends TestCase
     public static function currentProvider(): array
     {
         return [
-            'the Navigation screen naming none' => ['/menus', [], ['Header']],
-            'the Navigation screen naming one'  => ['/menus', ['menu' => 2], ['Footer']],
-            'a screen naming a menu'            => ['/history', ['menu' => 2], ['Footer']],
-            'a screen naming an item'           => ['/item-edit', ['item' => 2], ['Footer']],
-            'a screen naming a missing item'    => ['/item-edit', ['item' => 99], []],
-            'a screen naming neither'           => ['/menu-add', [], []],
+            'the Navigation screen naming none'  => ['/menus', [], ['Header']],
+            'the Navigation screen naming one'   => ['/menus', ['menu' => 2], ['Footer']],
+            'a screen naming a menu'             => ['/history', ['menu' => 2], ['Footer']],
+            'a screen naming an item'            => ['/item-edit', ['item' => 2], ['Footer']],
+            'a screen naming a missing item'     => ['/item-edit', ['item' => 99], []],
+            'a screen naming neither'            => ['/menu-add', [], []],
+            'another part of the CMS naming one' => ['/site/home', ['menu' => 2], []],
         ];
     }
 
