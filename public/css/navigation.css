@@ -34,3 +34,13 @@
 .navtree__path {
     font-family: var(--font-mono, monospace);
 }
+
+/* An item linked to a record edits either: its Edit opens a menu of the item and the record. */
+.navtree__edit .icon:last-child {
+    width: 1rem;
+    height: 1rem;
+}
+
+.navtree__edit-menu {
+    min-width: 14rem;
+}

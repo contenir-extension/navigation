@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- An item linked to a page or other record edits either from the Navigation screen: its Edit opens a menu of Edit
+  navigation item and Edit linked Page (or whatever the record's section calls it), the second opening the record's
+  own form in the CMS. An address or a text item keeps the plain Edit.
+
 ## [0.2.0] - 2026-10-26
 
 Requires contenir/contenir-extension-api 0.7.3 and contenir/contenir-navigation 0.2.

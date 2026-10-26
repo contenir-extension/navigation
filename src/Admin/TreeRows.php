@@ -19,7 +19,9 @@ use function sprintf;
  * A menu's tree as the Navigation screen draws it: each item's label,
  * icon and path, a badge where the site won't show it as it is, whether it
  * is shown, how it is drawn, and the items nested under it. A record item is described by the
- * host's records, so its title, path and status are the record's own.
+ * host's records, so its title, path and status are the record's own, and where the host gives
+ * the record's edit address, the row names it with what the record's section calls it, such as
+ * Page, for Edit linked Page.
  */
 final readonly class TreeRows
 {
@@ -34,9 +36,23 @@ final readonly class TreeRows
         RecordStatus::Archived->value    => 'Archived',
     ];
 
+    /**
+     * What each linkable section calls one of its records, by section.
+     *
+     * @var array<string, string>
+     */
+    private array $types;
+
     public function __construct(
         private ?RecordsInterface $records,
-    ) {}
+    ) {
+        $types = [];
+        foreach ($records?->sections() ?? [] as $section) {
+            $types[$section->section] = $section->title;
+        }
+
+        $this->types = $types;
+    }
 
     /**
      * How the item is drawn on the site, in words.
@@ -82,21 +98,25 @@ final readonly class TreeRows
     }
 
     /**
-     * The label, icon, path and badge for what the item links to: its
-     * address, its record, or nothing.
+     * The label, icon, path and badge for what the item links to (its address, its record, or
+     * nothing), and the linked record's edit address and kind where it has one.
      *
-     * @return array{string, string, string|null, string|null}
+     * @return array{string, string, string|null, string|null, array{url: string, type: string}|null}
      */
     private function link(Item $item): array
     {
         $url = $item->url;
         if (null !== $url) {
-            return [(string) $item->label, self::icon($url->kind), $url->display(), null];
+            return [(string) $item->label, self::icon($url->kind), $url->display(), null, null];
         }
 
         $record = $item->record;
 
-        return null === $record ? [(string) $item->label, 'typography', null, null] : $this->record($item, $record);
+        return (
+            null === $record
+                ? [(string) $item->label, 'typography', null, null, null]
+                : $this->record($item, $record)
+        );
     }
 
     /**
@@ -104,7 +124,7 @@ final readonly class TreeRows
      * host describes it; Missing when the host lends records and has no such
      * record.
      *
-     * @return array{string, string, string|null, string|null}
+     * @return array{string, string, string|null, string|null, array{url: string, type: string}|null}
      */
     private function record(Item $item, RecordTarget $target): array
     {
@@ -112,20 +132,28 @@ final readonly class TreeRows
         if (null === $summary) {
             $label = $item->label ?? sprintf('%s %s', $target->section, $target->id);
 
-            return [$label, 'file', null, null === $this->records ? null : 'Missing'];
+            return [$label, 'file', null, null === $this->records ? null : 'Missing', null];
         }
 
         $path = null === $item->fragment ? $summary->path : "{$summary->path}#{$item->fragment}";
 
-        return [$item->label ?? $summary->title, 'file', $path, self::NOT_LIVE[$summary->status->value] ?? null];
+        return [
+            $item->label ?? $summary->title,
+            'file',
+            $path,
+            self::NOT_LIVE[$summary->status->value] ?? null,
+            null === $summary->editUrl
+                ? null
+                : ['url' => $summary->editUrl, 'type' => $this->types[$target->section] ?? 'Record'],
+        ];
     }
 
     /**
-     * @return array{id: int, label: string, icon: string, path: string|null, badge: string|null, active: bool, drawn: string}
+     * @return array{id: int, label: string, icon: string, path: string|null, badge: string|null, active: bool, drawn: string, linked: array{url: string, type: string}|null}
      */
     private function row(Item $item): array
     {
-        [$label, $icon, $path, $badge] = $this->link($item);
+        [$label, $icon, $path, $badge, $linked] = $this->link($item);
 
         return [
             'id'     => (int) $item->id,
@@ -135,6 +163,7 @@ final readonly class TreeRows
             'badge'  => $item->active ? $badge : 'Hidden',
             'active' => $item->active,
             'drawn'  => self::drawn($item),
+            'linked' => $linked,
         ];
     }
 }
