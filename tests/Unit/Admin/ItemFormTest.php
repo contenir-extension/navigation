@@ -16,7 +16,7 @@ use function array_slice;
 #[Group('unit')]
 final class ItemFormTest extends TestCase
 {
-    private const array PARENTS = ['' => 'The top of the menu'];
+    private const array PARENTS = ['' => 'None (top level)'];
 
     /**
      * Each field's name, type, whether it is required and its value.
@@ -40,11 +40,10 @@ final class ItemFormTest extends TestCase
     {
         static::assertSame(
             [
-                ['link',     'link',     false, null],
-                ['label',    'text',     false, null],
-                ['fragment', 'text',     false, null],
-                ['html',     'textarea', false, null],
-                ['parent',   'select',   false, ''],
+                ['link',   'link',     false, null],
+                ['label',  'text',     false, null],
+                ['html',   'textarea', false, null],
+                ['parent', 'select',   false, ''],
             ],
             self::fields(ItemForm::adding(self::PARENTS)->fields),
         );
@@ -77,7 +76,7 @@ final class ItemFormTest extends TestCase
                 ['class',   'text',     false, null],
                 ['active',  'checkbox', false, true],
             ],
-            self::fields(array_slice(ItemForm::editing(self::PARENTS, [], true, '/about')->fields, offset: 5)),
+            self::fields(array_slice(ItemForm::editing(self::PARENTS, [], true, '/about')->fields, offset: 4)),
         );
     }
 

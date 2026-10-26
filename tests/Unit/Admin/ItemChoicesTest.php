@@ -42,7 +42,7 @@ final class ItemChoicesTest extends TestCase
         static::assertSame(
             [
                 [
-                    '' => 'The top of the menu',
+                    '' => 'None (top level)',
                     1  => '— Shop',
                     2  => '— — Sale',
                     3  => '— — — Clearance',
@@ -50,7 +50,7 @@ final class ItemChoicesTest extends TestCase
                     5  => '— — Archive',
                     6  => '— page 9',
                 ],
-                ['' => 'The top of the menu', 1 => '— Shop', 2 => '— — Sale', 3 => '— — — Clearance', 6 => '— page 9'],
+                ['' => 'None (top level)', 1 => '— Shop', 2 => '— — Sale', 3 => '— — — Clearance', 6 => '— page 9'],
             ],
             [ItemChoices::parents($items), ItemChoices::parents($items, 4)],
         );

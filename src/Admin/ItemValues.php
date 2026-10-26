@@ -21,16 +21,15 @@ final class ItemValues
     public static function of(Item $item): array
     {
         return [
-            'link'     => self::link($item)?->encode(),
-            'label'    => $item->label,
-            'fragment' => $item->fragment,
-            'html'     => $item->html,
-            'parent'   => null === $item->parentId ? ItemChoices::TOP : (string) $item->parentId,
-            'display'  => $item->display->value,
-            'icon'     => $item->icon,
-            'new_tab'  => Item::NEW_TAB === $item->target,
-            'class'    => $item->class,
-            'active'   => $item->active,
+            'link'    => self::link($item)?->encode(),
+            'label'   => $item->label,
+            'html'    => $item->html,
+            'parent'  => null === $item->parentId ? ItemChoices::TOP : (string) $item->parentId,
+            'display' => $item->display->value,
+            'icon'    => $item->icon,
+            'new_tab' => Item::NEW_TAB === $item->target,
+            'class'   => $item->class,
+            'active'  => $item->active,
         ];
     }
 
@@ -42,7 +41,6 @@ final class ItemValues
         $values = [];
         foreach ([
             'label',
-            'fragment',
             'html',
             'parent',
             'display',
@@ -72,7 +70,7 @@ final class ItemValues
     private static function link(Item $item): ?Link
     {
         if (null !== $item->record) {
-            return Link::record(new RecordReference($item->record->section, $item->record->id));
+            return Link::record(new RecordReference($item->record->section, $item->record->id), $item->fragment);
         }
 
         return null === $item->url ? null : Link::address($item->url->display());

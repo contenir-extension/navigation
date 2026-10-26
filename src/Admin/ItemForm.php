@@ -105,7 +105,7 @@ final class ItemForm
                 'link',
                 'Links to',
                 FieldType::Link,
-                'A page or other record, or an address. Leave it empty for text only.',
+                'A page or other record, with the spot on its page if you need one, or an address. Leave it empty for text only.',
                 default: $value('link'),
                 attributes: ['create' => $create, 'prefix' => (string) $prefix],
             ),
@@ -116,19 +116,13 @@ final class ItemForm
                 default: $value('label'),
             ),
             new Field(
-                'fragment',
-                'Spot on the page',
-                description: 'For a page or record: the id of a section on it, such as staff.',
-                default: $value('fragment'),
-            ),
-            new Field(
                 'html',
                 'Text',
                 FieldType::Textarea,
                 'For text only: bold, italics and links are kept.',
                 default: $value('html'),
             ),
-            new Field('parent', 'Under', FieldType::Select, default: $value('parent') ?? '', options: $parents),
+            new Field('parent', 'Parent', FieldType::Select, default: $value('parent') ?? '', options: $parents),
         ];
     }
 }

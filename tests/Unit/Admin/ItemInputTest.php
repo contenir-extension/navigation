@@ -115,9 +115,8 @@ final class ItemInputTest extends TestCase
         static::assertEquals(
             Item::record(new RecordTarget('page', 'about:us'), 'staff', 'Team'),
             self::input([
-                'link'     => ['kind' => 'record', 'record' => 'page:about:us'],
-                'fragment' => '#staff',
-                'label'    => 'Team',
+                'link'  => ['kind' => 'record', 'record' => 'page:about:us', 'fragment' => '#staff'],
+                'label' => 'Team',
             ])->item(),
         );
     }

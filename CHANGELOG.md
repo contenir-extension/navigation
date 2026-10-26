@@ -19,6 +19,8 @@ Requires contenir/contenir-extension-api 0.7.3 and contenir/contenir-navigation 
   as a revision with who made it. Publishing needs Approve; once a menu is live, anyone who may change it changes the
   site's menu.
 - Publishing asks for no note, and History puts an earlier version back on the site.
+- An item's "Spot on the page" is part of its link: typed after the chosen page in the link field, or into an address
+  as its fragment. "Under" is labelled Parent, its first choice "None (top level)".
 - Times on the Navigation and history screens show in the site's timezone, the zone of the clock the host lends,
   rather than in the UTC the tables hold.
 - A menu's handle is labelled Identifier. It fills from the Title as you type, until you change it, and keeps to the

@@ -101,7 +101,7 @@ final readonly class ItemInput
     private function made(?Link $link, ?RecordTarget $created): Item
     {
         $label    = $this->input->postedOrNull('label');
-        $fragment = $this->input->postedOrNull('fragment');
+        $fragment = $link?->fragment;
         $record   = $link?->record;
         if (null !== $record) {
             return Item::record(new RecordTarget($record->section, $record->id), $fragment, $label);

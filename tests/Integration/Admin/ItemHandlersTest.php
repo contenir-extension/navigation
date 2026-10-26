@@ -92,7 +92,7 @@ final class ItemHandlersTest extends TestCase
         static::assertSame(
             [
                 ['create' => true, 'prefix' => '/about'],
-                ['' => 'The top of the menu', '1' => '— page 1'],
+                ['' => 'None (top level)', '1' => '— page 1'],
                 '1',
             ],
             [
@@ -113,9 +113,8 @@ final class ItemHandlersTest extends TestCase
             ItemAddHandler::class,
             ['menu' => $this->menu],
             [
-                'link'     => ['kind' => 'record', 'record' => 'page:1'],
-                'fragment' => '#staff',
-                'parent'   => (string) $shop->id,
+                'link'   => ['kind' => 'record', 'record' => 'page:1', 'fragment' => '#staff'],
+                'parent' => (string) $shop->id,
             ],
         );
 
@@ -338,14 +337,13 @@ final class ItemHandlersTest extends TestCase
 
         static::assertSame(
             [
-                ['record:page:1', 'Team', 'staff', 'icon', 'people', true, 'x', false],
-                ['' => 'The top of the menu', '3' => '— News'],
+                ['record:page:1#staff', 'Team', 'icon', 'people', true, 'x', false],
+                ['' => 'None (top level)', '3' => '— News'],
             ],
             [
                 array_map(fn(string $name): mixed => $this->field($result, $name)?->default, [
                     'link',
                     'label',
-                    'fragment',
                     'display',
                     'icon',
                     'new_tab',
