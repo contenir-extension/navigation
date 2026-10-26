@@ -176,10 +176,10 @@ final class PublishingHandlersTest extends TestCase
 
         static::assertSame(
             [
-                ['id' => 2, 'published' => '23 Oct 2026, 9:00 am', 'by' => null, 'note' => null, 'live' => true],
+                ['id' => 2, 'published' => '23 Oct 2026, 9:00am', 'by' => null, 'note' => null, 'live' => true],
                 [
                     'id'        => 1,
-                    'published' => '23 Oct 2026, 9:00 am',
+                    'published' => '23 Oct 2026, 9:00am',
                     'by'        => 'Ann Editor',
                     'note'      => null,
                     'live'      => false,

@@ -79,7 +79,7 @@ final class MenusHandlerTest extends TestCase
         $this->item($menu, Item::text('Sale'), position: 1);
 
         static::assertSame(
-            ['live' => true, 'published' => '23 Oct 2026, 9:00 am', 'by' => 'Ann Editor', 'changes' => 1],
+            ['live' => true, 'published' => '23 Oct 2026, 9:00am', 'by' => 'Ann Editor', 'changes' => 1],
             $this->shown()['menu']['state'],
         );
     }

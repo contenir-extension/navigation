@@ -24,7 +24,7 @@ final class SiteTimeTest extends TestCase
         )));
 
         static::assertSame(
-            '26 Oct 2026, 11:22 am',
+            '26 Oct 2026, 11:22am',
             $time->show(new DateTimeImmutable('2026-10-26 00:22', new DateTimeZone('UTC'))),
         );
     }
