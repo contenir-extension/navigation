@@ -8,8 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 Requires contenir/contenir-extension-api 0.7.3 and contenir/contenir-navigation 0.2.
 
+### Removed
+
+- Discard changes, and its `discard` handler: a live menu holds no unpublished changes to discard.
+
 ### Changed
 
+- A menu is published once. Until then it is a draft the site doesn't show; after that, every change to it (adding,
+  editing, moving or deleting an item, or restoring an earlier version) goes live as it is saved, each save recorded
+  as a revision with who made it. Publishing needs Approve; once a menu is live, anyone who may change it changes the
+  site's menu.
+- Publishing asks for no note, and History puts an earlier version back on the site.
 - A menu's handle is labelled Identifier. It fills from the Title as you type, until you change it, and keeps to the
   handle rule (lowercase letters, digits and dashes, at most 64 characters).
 - Where it appears sits in an Info card in the sidebar, beside the menu's Title and Identifier.

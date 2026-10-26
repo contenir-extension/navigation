@@ -1,8 +1,8 @@
 <?php
 /**
  * The Navigation section's home: the page header with Add menu, a switcher of the site's menus,
- * and the chosen menu's card: where it stands (live with when and by whom, its unpublished changes,
- * or not live), its actions, and its tree of items, each with its own actions.
+ * and the chosen menu's card: where it stands (not live until published once, then live, with when
+ * it last changed and by whom), its actions, and its tree of items, each with its own actions.
  *
  * @var array{
  *     menus: list<array{id: int, title: string, current: bool}>,
@@ -27,7 +27,7 @@ $menu = $values['menu'];
                         <a class="btn btn--outline" href="<?= $view->escape($view->url('menu-add')) ?>"><?= $view->icon('plus') ?><span>Add menu</span></a>
                     </div>
                 </div>
-                <p class="pageheader__description">Build the site's menus, then publish them to make them live.</p>
+                <p class="pageheader__description">Build the site's menus. Publish a menu once to put it on the site; after that, changes go live as you save them.</p>
 
 <?php if (null === $menu): ?>
                 <div class="card">
@@ -59,9 +59,9 @@ $menu = $values['menu'];
                             <h2 class="card__title"><?= $view->escape($menu['title']) ?> <span class="badge badge--outline"><?= $view->escape($menu['handle']) ?></span></h2>
                             <p class="card__description">
 <?php if (! $state['live']): ?>
-                                <span class="badge badge--warning-muted">Not live</span> This menu hasn't been published, so the site doesn't show it yet.
+                                <span class="badge badge--warning-muted">Not live</span> Publish it once to put it on the site. After that, changes go live as you save them.
 <?php elseif (0 === $state['changes']): ?>
-                                <span class="badge badge--success-muted">Published</span> <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
+                                <span class="badge badge--success-muted">Live</span> Last changed <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
 <?php else: ?>
                                 <span class="badge badge--info-muted"><?= $state['changes'] ?> unpublished <?= 1 === $state['changes'] ? 'change' : 'changes' ?></span> Published <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
 <?php endif ?>
@@ -73,12 +73,6 @@ $menu = $values['menu'];
                         <div class="cluster cluster--gap-sm">
                             <a class="btn btn--ghost btn--sm" href="<?= $view->escape($view->url('history', ['menu' => $menu['id']])) ?>"><?= $view->icon('history') ?><span>History</span></a>
                             <a class="btn btn--ghost btn--sm" href="<?= $view->escape($view->url('menu-edit', ['menu' => $menu['id']])) ?>"><?= $view->icon('pencil') ?><span>Edit menu</span></a>
-<?php if ($state['live'] && $state['changes'] > 0): ?>
-                            <form method="post" action="<?= $view->escape($view->url('discard', ['menu' => $menu['id']])) ?>">
-                                <?= $view->token() ?>
-                                <button type="submit" class="btn btn--outline btn--sm"><?= $view->icon('arrow-back') ?><span>Discard changes</span></button>
-                            </form>
-<?php endif ?>
                         </div>
                     </div>
                     <div class="card__content">
@@ -99,10 +93,8 @@ $menu = $values['menu'];
                     <div class="card__footer card__footer--between">
                         <a class="btn btn--outline" href="<?= $view->escape($view->url('item-add', ['menu' => $menu['id']])) ?>"><?= $view->icon('plus') ?><span>Add item</span></a>
 <?php if (! $state['live'] || $state['changes'] > 0): ?>
-                        <form method="post" action="<?= $view->escape($view->url('publish', ['menu' => $menu['id']])) ?>" class="cluster cluster--gap-sm">
+                        <form method="post" action="<?= $view->escape($view->url('publish', ['menu' => $menu['id']])) ?>">
                             <?= $view->token() ?>
-                            <label class="sr-only" for="publish-note">What changed</label>
-                            <input type="text" class="input" id="publish-note" name="note" maxlength="255" placeholder="What changed (optional)">
                             <button type="submit" class="btn btn--primary"><?= $view->icon('upload') ?><span>Publish</span></button>
                         </form>
 <?php endif ?>

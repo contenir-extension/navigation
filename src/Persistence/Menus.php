@@ -8,6 +8,8 @@ use Contenir\Extension\Api\Context\ExtensionContextInterface;
 use Contenir\Extension\Api\Editor\CurrentEditorInterface;
 use Contenir\Extension\Api\Record\RecordsInterface;
 use Contenir\Navigation\Exception\InvalidItemException;
+use Contenir\Navigation\Exception\NotFoundException;
+use Contenir\Navigation\Exception\StorageException;
 use Contenir\Navigation\Menu\PublishedBy;
 use Contenir\Navigation\Publishing\Publisher;
 use Contenir\Navigation\Storage\NavigationRepositoryInterface;
@@ -66,5 +68,25 @@ final readonly class Menus
         $editor = $this->editors?->current();
 
         return null === $editor ? null : new PublishedBy($editor->id, $editor->name);
+    }
+
+    /**
+     * Publishes $menu's draft as a new revision when the menu is live, so a change to a live menu
+     * reaches the site as it is saved. A menu not yet published stays a draft until someone
+     * publishes it. Says whether it published.
+     *
+     * @throws NotFoundException    When there is no such menu.
+     * @throws InvalidItemException When the host's editor can't be recorded.
+     * @throws StorageException     When the menu can't be read or published.
+     */
+    public function publishIfLive(int $menu): bool
+    {
+        if (null === $this->repository->navigation($menu)->revisionId) {
+            return false;
+        }
+
+        $this->publisher->publish($menu, $this->publisher());
+
+        return true;
     }
 }

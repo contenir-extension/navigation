@@ -1,7 +1,7 @@
 <?php
 /**
- * A menu's revisions, newest first: when each was published, by whom and its note, the live one
- * marked, and a way to restore any other into the draft.
+ * A menu's revisions, newest first: when each went live, by whom and any note it was given, the
+ * live one marked, and a way to put any other back on the site.
  *
  * @var array{
  *     menu: array{id: int|null, title: string},
@@ -15,7 +15,7 @@
                         <h1 class="pageheader__title"><?= $view->escape($values['menu']['title']) ?> history</h1>
                     </div>
                 </div>
-                <p class="pageheader__description">Every time the menu was published. Restoring one copies it into the draft, ready to publish again.</p>
+                <p class="pageheader__description">Every version of the menu the site has shown, newest first. Restoring one puts it back on the site.</p>
 
                 <div class="card">
                     <div class="card__content card__content--pt">

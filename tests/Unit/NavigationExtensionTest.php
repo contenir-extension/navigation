@@ -53,7 +53,6 @@ final class NavigationExtensionTest extends TestCase
                 'item-move'   => 'update',
                 'item-delete' => 'delete',
                 'publish'     => 'approve',
-                'discard'     => 'update',
                 'history'     => 'view',
                 'restore'     => 'update',
             ],

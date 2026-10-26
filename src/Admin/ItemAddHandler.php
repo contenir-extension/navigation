@@ -74,7 +74,7 @@ final class ItemAddHandler implements HandlerInterface
         }
 
         try {
-            $menus->transaction->run(
+            $live = $menus->transaction->run(
                 /**
                  * @throws InvalidItemException
                  * @throws InvalidLinkException
@@ -83,10 +83,12 @@ final class ItemAddHandler implements HandlerInterface
                  * @throws PageRefusedException
                  * @throws StorageException
                  */
-                static function () use ($menus, $menu, $posted, $parent, $under, $items): void {
+                static function () use ($menus, $menu, $posted, $parent, $under, $items): bool {
                     $item = $posted->item(null, NewPage::made($menus->records, $posted->link(), $under))
                         ->withPlacement((int) $menu->id, $parent, Placement::last($items, $parent));
                     $menus->repository->saveItem($item);
+
+                    return $menus->publishIfLive((int) $menu->id);
                 },
             );
         } catch (
@@ -96,6 +98,9 @@ final class ItemAddHandler implements HandlerInterface
                 ->withMessage('danger', $problem->getMessage());
         }
 
-        return HandlerResult::redirect(Urls::menu($menu->id))->withMessage('success', 'Item added to the draft.');
+        return HandlerResult::redirect(Urls::menu($menu->id))->withMessage(
+            'success',
+            $live ? 'Item added.' : 'Item added to the draft.',
+        );
     }
 }

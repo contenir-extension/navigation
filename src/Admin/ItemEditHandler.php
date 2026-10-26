@@ -75,7 +75,7 @@ final class ItemEditHandler implements HandlerInterface
         }
 
         try {
-            $menus->transaction->run(
+            $live = $menus->transaction->run(
                 /**
                  * @throws InvalidItemException
                  * @throws InvalidLinkException
@@ -84,7 +84,7 @@ final class ItemEditHandler implements HandlerInterface
                  * @throws PageRefusedException
                  * @throws StorageException
                  */
-                static function () use ($menus, $posted, $parent, $under, $items, $item): void {
+                static function () use ($menus, $posted, $parent, $under, $items, $item): bool {
                     $changed = $posted->presented(
                         $posted->item($item, NewPage::made($menus->records, $posted->link(), $under)),
                     );
@@ -92,6 +92,8 @@ final class ItemEditHandler implements HandlerInterface
                     if ($parent !== $item->parentId) {
                         $menus->repository->moveItem((int) $saved->id, $parent, Placement::last($items, $parent));
                     }
+
+                    return $menus->publishIfLive((int) $item->navigationId);
                 },
             );
         } catch (
@@ -101,6 +103,9 @@ final class ItemEditHandler implements HandlerInterface
                 ->withMessage('danger', $problem->getMessage());
         }
 
-        return HandlerResult::redirect(Urls::menu($menu))->withMessage('success', 'Item saved to the draft.');
+        return HandlerResult::redirect(Urls::menu($menu))->withMessage(
+            'success',
+            $live ? 'Item saved.' : 'Item saved to the draft.',
+        );
     }
 }

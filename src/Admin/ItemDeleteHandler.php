@@ -8,6 +8,7 @@ use Contenir\Extension\Api\Context\ExtensionContextInterface;
 use Contenir\Extension\Api\Handler\HandlerInterface;
 use Contenir\Extension\Api\Handler\HandlerResult;
 use Contenir\Extension\Navigation\Persistence\Menus;
+use Contenir\Navigation\Exception\InvalidItemException;
 use Contenir\Navigation\Exception\NotFoundException;
 use Contenir\Navigation\Exception\StorageException;
 use LogicException;
@@ -40,13 +41,19 @@ final class ItemDeleteHandler implements HandlerInterface
         try {
             $item = $menus->repository->item((int) Input::of($request)->id('item'));
             $menus->repository->deleteItem((int) $item->id);
+            $live = $menus->publishIfLive((int) $item->navigationId);
         } catch (NotFoundException) {
             return HandlerResult::redirect(Urls::menu(null))->withMessage('warning', 'That item no longer exists.');
+        } catch (InvalidItemException $problem) {
+            return HandlerResult::redirect(Urls::menu($item->navigationId))->withMessage(
+                'danger',
+                $problem->getMessage(),
+            );
         }
 
         return HandlerResult::redirect(Urls::menu($item->navigationId))->withMessage(
             'success',
-            'Item deleted from the draft.',
+            $live ? 'Item deleted.' : 'Item deleted from the draft.',
         );
     }
 }

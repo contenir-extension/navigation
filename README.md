@@ -10,9 +10,9 @@ the site draws them through an adapter such as `contenir/contenir-navigation-mez
   fragment, an email address or a phone number, typed with no prefix), or to nothing, as a heading or a little text.
   Items nest, move up and down, and say how they are drawn: a label, an icon token or both, a new tab, extra classes,
   and a switch to hide them.
-- **Drafts and publishing**: every change goes into the menu's draft, which shows how many changes it holds. Publishing
-  makes the draft live as a revision, recording who published it and an optional note. Changes can be discarded, and
-  History restores any earlier revision into the draft.
+- **Publishing**: a new menu is a draft the site doesn't show until it is published once. After that, every change to it
+  goes live as it is saved, each save recorded as a revision with who made it, and History puts any earlier revision
+  back on the site.
 - **Badges** mark items the site won't show as they stand: a record that is a draft, unpublished, archived or gone, or
   an item that is hidden.
 
@@ -25,8 +25,8 @@ the site draws them through an adapter such as `contenir/contenir-navigation-mez
 ## Permissions
 
 Every screen is guarded by the section it adds, `site.navigation.menus`. Viewing needs View; adding menus and items
-needs Add; changing, moving, discarding and restoring need Update; deleting needs Delete; and publishing needs
-Approve, so a role can work on a menu's draft without making it live.
+needs Add; changing, moving and restoring need Update; deleting needs Delete; and publishing a menu for the first
+time needs Approve. Once a menu is live, anyone who may change it changes the site's menu.
 
 ## Development
 

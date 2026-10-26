@@ -8,7 +8,6 @@ use Contenir\Extension\Api\ExtensionInterface;
 use Contenir\Extension\Api\Handler\HandlerInterface;
 use Contenir\Extension\Api\Handler\Privilege;
 use Contenir\Extension\Api\Registry;
-use Contenir\Extension\Navigation\Admin\DiscardHandler;
 use Contenir\Extension\Navigation\Admin\HistoryHandler;
 use Contenir\Extension\Navigation\Admin\ItemAddHandler;
 use Contenir\Extension\Navigation\Admin\ItemDeleteHandler;
@@ -57,7 +56,6 @@ final readonly class NavigationExtension implements ExtensionInterface
         ItemMoveHandler::NAME   => [ItemMoveHandler::class, Privilege::Update],
         ItemDeleteHandler::NAME => [ItemDeleteHandler::class, Privilege::Delete],
         PublishHandler::NAME    => [PublishHandler::class, Privilege::Approve],
-        DiscardHandler::NAME    => [DiscardHandler::class, Privilege::Update],
         HistoryHandler::NAME    => [HistoryHandler::class, Privilege::View],
         RestoreHandler::NAME    => [RestoreHandler::class, Privilege::Update],
     ];
