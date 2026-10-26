@@ -24,8 +24,13 @@ Requires contenir/contenir-extension-api 0.7.3 and contenir/contenir-navigation 
   handler, needing Update), Edit, and a menu with Add item below and Delete. The up and down buttons are gone: the tree
   is the dashboard's sortable action bar tree, so an item is dragged by its grip, or moved with the keyboard (Space,
   then the arrow keys), and SortableJS is no longer a dependency.
-- An item's "Spot on the page" is part of its link: typed after the chosen page in the link field, or into an address
+- An item's anchor on its page is part of its link: typed after the chosen page in the link field, or into an address
   as its fragment. "Under" is labelled Parent, its first choice "None (top level)".
+- An item is edited in its link's bar: what it links to, its address, its label (which shows the linked page's title,
+  or Untitled for an address, as the title it falls back to) and the anchor, with text, parent and how it is drawn
+  folded away under Advanced. Choosing a web address on another host ticks Open in a new tab.
+- An item's Show on the site is a switch called Visible.
+- Deleting an item or a menu asks with a short heading, Delete item? or Delete menu?, and a red Delete.
 - Times on the Navigation and history screens show in the site's timezone, the zone of the clock the host lends,
   rather than in the UTC the tables hold.
 - A menu's handle is labelled Identifier. It fills from the Title as you type, until you change it, and keeps to the
