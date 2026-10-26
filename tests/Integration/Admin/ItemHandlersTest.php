@@ -10,6 +10,7 @@ use Contenir\Extension\Navigation\Admin\ItemAddHandler;
 use Contenir\Extension\Navigation\Admin\ItemDeleteHandler;
 use Contenir\Extension\Navigation\Admin\ItemEditHandler;
 use Contenir\Extension\Navigation\Admin\ItemMoveHandler;
+use Contenir\Extension\Navigation\Admin\ItemVisibilityHandler;
 use Contenir\Extension\Navigation\Tests\Trait\NavigationHostTrait;
 use Contenir\Navigation\Link\RecordTarget;
 use Contenir\Navigation\Link\Url;
@@ -19,6 +20,7 @@ use Contenir\Navigation\Menu\ItemKind;
 use Contenir\Navigation\Menu\Node;
 use Contenir\Navigation\Menu\Tree;
 use Override;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -36,6 +38,17 @@ final class ItemHandlersTest extends TestCase
     use NavigationHostTrait;
 
     private int $menu;
+
+    /**
+     * @return array<string, array{array<string, string>, bool}>
+     */
+    public static function visibilityProvider(): array
+    {
+        return [
+            'switched off' => [[], false],
+            'switched on'  => [['active' => '1'], true],
+        ];
+    }
 
     /**
      * What the link field posts for a new page at $path.
@@ -588,6 +601,47 @@ final class ItemHandlersTest extends TestCase
                 $this->answer(ItemMoveHandler::class, ['item' => (int) $shop->id])->messages,
                 $this->answer(ItemMoveHandler::class, ['item' => 9], ['direction' => 'up'])->messages,
             ],
+        );
+    }
+
+    #[Test]
+    public function theSwitchChangesNothingUnlessPosted(): void
+    {
+        $shop   = $this->item($this->menu, Item::text('Shop'));
+        $result = $this->answer(ItemVisibilityHandler::class, ['item' => (int) $shop->id]);
+
+        static::assertSame(
+            ['/admin/extension/navigation/menus', [], true],
+            [$result->url, $result->messages, $this->menus()->repository->item((int) $shop->id)->active],
+        );
+    }
+
+    /**
+     * @param array<string, string> $posted
+     */
+    #[Test]
+    #[DataProvider('visibilityProvider')]
+    public function theSwitchOnAnItemsRowShowsOrHidesIt(array $posted, bool $shown): void
+    {
+        $shop = $this->item(
+            $this->menu,
+            Item::text('Shop')->withPresentation('Shop', Display::Label, null, null, null, ! $shown),
+        );
+
+        $result = $this->answer(ItemVisibilityHandler::class, ['item' => (int) $shop->id], $posted);
+
+        static::assertSame(
+            ['/admin/extension/navigation/menus?menu=1', $shown],
+            [$result->url, $this->menus()->repository->item((int) $shop->id)->active],
+        );
+    }
+
+    #[Test]
+    public function theSwitchOnAnItemThatIsGoneSaysSo(): void
+    {
+        static::assertSame(
+            [['level' => 'warning', 'text' => 'That item no longer exists.']],
+            $this->answer(ItemVisibilityHandler::class, ['item' => 9], [])->messages,
         );
     }
 

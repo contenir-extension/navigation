@@ -20,6 +20,10 @@ import { createSortable } from '../utils/Sortable.js'
  * `[data-navtree-token]` wrapper, so the screen reloads with the menu's
  * draft as the add-on saved it. Dropping it back where it was posts
  * nothing.
+ *
+ * Turning an item's `[data-navtree-visibility]` switch posts the form it
+ * sits in, which shows or hides the item. Each list answers only for its
+ * own items' switches, as the lists nested in it have their own.
  */
 const DRAGGING_CLASS = 'navtree--dragging'
 
@@ -44,8 +48,18 @@ export default class MenuTree extends BaseComponent {
             },
         })
 
+        const onChange = (event) => {
+            const toggle = event.target.closest('[data-navtree-visibility]')
+            if (!toggle || toggle.closest('[data-navtree]') !== element) return
+            toggle.form?.requestSubmit()
+        }
+        element.addEventListener('change', onChange)
+
         return {
-            cleanup: () => sortable.destroy(),
+            cleanup: () => {
+                sortable.destroy()
+                element.removeEventListener('change', onChange)
+            },
         }
     }
 

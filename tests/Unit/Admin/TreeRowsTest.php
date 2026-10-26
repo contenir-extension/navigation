@@ -53,6 +53,7 @@ final class TreeRowsTest extends TestCase
                 'icon'     => 'file',
                 'path'     => null,
                 'badge'    => null,
+                'active'   => true,
                 'drawn'    => 'Label',
                 'children' => [],
             ],

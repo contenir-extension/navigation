@@ -1,24 +1,11 @@
-/* The Navigation screen's menu tree: nested items indent under their parent. */
-.navtree .navtree {
-    margin-top: 0.5rem;
-    margin-left: 1.75rem;
-}
-
-.navtree__item + .navtree__item {
-    margin-top: 0.5rem;
+/* The Navigation screen's menu tree: each item an action bar, the icon of what it links to beside its label. */
+.navtree .actionbar__title > .icon {
+    flex-shrink: 0;
+    color: var(--fg-muted, currentColor);
 }
 
 .navtree__path {
     font-family: var(--font-mono, monospace);
-}
-
-/* The grip an item is dragged by. */
-.navtree__handle {
-    align-self: flex-start;
-    display: inline-flex;
-    padding: 0.125rem 0.25rem 0 0;
-    color: var(--color-text-muted, currentColor);
-    cursor: grab;
 }
 
 /* An item's list for the items under it stays out of the way until one is dragged, then opens as a drop zone. */
@@ -27,7 +14,8 @@
 }
 
 .navtree--dragging .navtree--empty {
-    display: block;
-    min-height: 2rem;
-    border-style: dashed;
+    display: flex;
+    min-height: 2.5rem;
+    border: 1px dashed var(--border, currentColor);
+    border-radius: var(--radius-md, 0.25rem);
 }

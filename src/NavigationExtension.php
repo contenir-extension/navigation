@@ -13,6 +13,7 @@ use Contenir\Extension\Navigation\Admin\ItemAddHandler;
 use Contenir\Extension\Navigation\Admin\ItemDeleteHandler;
 use Contenir\Extension\Navigation\Admin\ItemEditHandler;
 use Contenir\Extension\Navigation\Admin\ItemMoveHandler;
+use Contenir\Extension\Navigation\Admin\ItemVisibilityHandler;
 use Contenir\Extension\Navigation\Admin\MenuAddHandler;
 use Contenir\Extension\Navigation\Admin\MenuDeleteHandler;
 use Contenir\Extension\Navigation\Admin\MenuEditHandler;
@@ -47,17 +48,18 @@ final readonly class NavigationExtension implements ExtensionInterface
      * @var array<string, array{class-string<HandlerInterface>, Privilege}>
      */
     private const array SCREENS = [
-        MenusHandler::NAME      => [MenusHandler::class, Privilege::View],
-        MenuAddHandler::NAME    => [MenuAddHandler::class, Privilege::Add],
-        MenuEditHandler::NAME   => [MenuEditHandler::class, Privilege::Update],
-        MenuDeleteHandler::NAME => [MenuDeleteHandler::class, Privilege::Delete],
-        ItemAddHandler::NAME    => [ItemAddHandler::class, Privilege::Add],
-        ItemEditHandler::NAME   => [ItemEditHandler::class, Privilege::Update],
-        ItemMoveHandler::NAME   => [ItemMoveHandler::class, Privilege::Update],
-        ItemDeleteHandler::NAME => [ItemDeleteHandler::class, Privilege::Delete],
-        PublishHandler::NAME    => [PublishHandler::class, Privilege::Approve],
-        HistoryHandler::NAME    => [HistoryHandler::class, Privilege::View],
-        RestoreHandler::NAME    => [RestoreHandler::class, Privilege::Update],
+        MenusHandler::NAME          => [MenusHandler::class, Privilege::View],
+        MenuAddHandler::NAME        => [MenuAddHandler::class, Privilege::Add],
+        MenuEditHandler::NAME       => [MenuEditHandler::class, Privilege::Update],
+        MenuDeleteHandler::NAME     => [MenuDeleteHandler::class, Privilege::Delete],
+        ItemAddHandler::NAME        => [ItemAddHandler::class, Privilege::Add],
+        ItemEditHandler::NAME       => [ItemEditHandler::class, Privilege::Update],
+        ItemMoveHandler::NAME       => [ItemMoveHandler::class, Privilege::Update],
+        ItemDeleteHandler::NAME     => [ItemDeleteHandler::class, Privilege::Delete],
+        ItemVisibilityHandler::NAME => [ItemVisibilityHandler::class, Privilege::Update],
+        PublishHandler::NAME        => [PublishHandler::class, Privilege::Approve],
+        HistoryHandler::NAME        => [HistoryHandler::class, Privilege::View],
+        RestoreHandler::NAME        => [RestoreHandler::class, Privilege::Update],
     ];
 
     /**

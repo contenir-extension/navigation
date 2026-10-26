@@ -10,11 +10,16 @@ const TOKEN_NAME  = 'host_handler_token'
 const TOKEN_VALUE = 'test-token-value'
 
 let submitted
+let requested
 
 beforeEach(() => {
     submitted = []
+    requested = []
     vi.spyOn(HTMLFormElement.prototype, 'submit').mockImplementation(function () {
         submitted.push(this)
+    })
+    vi.spyOn(HTMLFormElement.prototype, 'requestSubmit').mockImplementation(function () {
+        requested.push(this.id)
     })
 })
 
@@ -33,11 +38,13 @@ function drawTree({ token = true } = {}) {
             ${token ? `<div data-navtree-token hidden><input type="hidden" name="${TOKEN_NAME}" value="${TOKEN_VALUE}"></div>` : ''}
             <ul data-navtree data-menu="3" data-parent="" id="top">
                 <li data-navtree-item data-move-url="/admin/extension/navigation/item-move?item=11" id="home">
+                    <form id="home-visibility"><input type="checkbox" name="active" value="1" data-navtree-visibility id="home-switch"></form>
                     <ul data-navtree data-menu="3" data-parent="11" id="under-home"></ul>
                 </li>
                 <li data-navtree-item data-move-url="/admin/extension/navigation/item-move?item=12" id="about">
                     <ul data-navtree data-menu="3" data-parent="12" id="under-about">
                         <li data-navtree-item data-move-url="/admin/extension/navigation/item-move?item=13" id="team">
+                            <form id="team-visibility"><input type="checkbox" name="active" value="1" data-navtree-visibility id="team-switch"></form>
                             <ul data-navtree data-menu="3" data-parent="13" id="under-team"></ul>
                         </li>
                     </ul>
@@ -69,7 +76,51 @@ function posted(form) {
     return Object.fromEntries(new FormData(form).entries())
 }
 
+function flip(id) {
+    const toggle = list(id)
+    toggle.checked = !toggle.checked
+    toggle.dispatchEvent(new Event('change', { bubbles: true }))
+}
+
 describe('MenuTree', () => {
+    it('posts an item\'s visibility switch when it is turned', () => {
+        drawTree()
+        mount(list('top'))
+
+        flip('home-switch')
+
+        expect(requested).toEqual(['home-visibility'])
+    })
+
+    it('leaves the switches of the items under its own to their list', () => {
+        drawTree()
+        mount(list('top'))
+        mount(list('under-about'))
+
+        flip('team-switch')
+
+        expect(requested).toEqual(['team-visibility'])
+    })
+
+    it('ignores a change that is not a visibility switch', () => {
+        drawTree()
+        mount(list('top'))
+
+        list('home').dispatchEvent(new Event('change', { bubbles: true }))
+
+        expect(requested).toEqual([])
+    })
+
+    it('stops posting switches once unmounted', () => {
+        drawTree()
+        const component = mount(list('top'))
+        component.unmount(list('top'))
+
+        flip('home-switch')
+
+        expect(requested).toEqual([])
+    })
+
     it('keeps its state under the attribute the host mounts it on', () => {
         const element = document.createElement('ul')
 

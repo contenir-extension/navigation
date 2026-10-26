@@ -11,6 +11,7 @@ use Contenir\Extension\Navigation\Admin\ItemAddHandler;
 use Contenir\Extension\Navigation\Admin\ItemDeleteHandler;
 use Contenir\Extension\Navigation\Admin\ItemEditHandler;
 use Contenir\Extension\Navigation\Admin\ItemMoveHandler;
+use Contenir\Extension\Navigation\Admin\ItemVisibilityHandler;
 use Contenir\Extension\Navigation\Admin\PublishHandler;
 use Contenir\Extension\Navigation\Admin\RestoreHandler;
 use Contenir\Extension\Navigation\NavigationExtension;
@@ -54,6 +55,7 @@ final class PublishingHandlersTest extends TestCase
             ],
             'deleting an item' => [ItemDeleteHandler::class, 'item', [], 'Item deleted.'],
             'moving an item'   => [ItemMoveHandler::class, 'item', ['direction' => 'down'], null],
+            'hiding an item'   => [ItemVisibilityHandler::class, 'item', [], null],
         ];
     }
 
@@ -66,6 +68,7 @@ final class PublishingHandlersTest extends TestCase
             'publishing'          => ['publish', ['menu' => 1], 0, null],
             'deleting an item'    => ['item-delete', ['item' => 1], 1, 1],
             'restoring a version' => ['restore', ['revision' => 1], 2, 2],
+            'hiding an item'      => ['item-visibility', ['item' => 1], 1, 1],
         ];
     }
 
