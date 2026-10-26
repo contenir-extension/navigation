@@ -36,6 +36,7 @@ final class MenusMenuTest extends TestCase
             'a screen naming a menu'             => ['/history', ['menu' => 2], ['Footer']],
             'a screen naming an item'            => ['/item-edit', ['item' => 2], ['Footer']],
             'a screen naming a missing item'     => ['/item-edit', ['item' => 99], []],
+            'a missing item, whatever the menu'  => ['/item-edit', ['item' => 99, 'menu' => 2], []],
             'a screen naming neither'            => ['/menu-add', [], []],
             'another part of the CMS naming one' => ['/site/home', ['menu' => 2], []],
         ];

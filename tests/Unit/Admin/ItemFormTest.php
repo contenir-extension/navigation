@@ -148,6 +148,21 @@ final class ItemFormTest extends TestCase
     }
 
     #[Test]
+    public function theLinkIsTheItemSayingHowItsLabelFallsBack(): void
+    {
+        $field = ItemForm::adding(self::PARENTS)->field('link');
+
+        static::assertSame(
+            [
+                'Item',
+                'Choose a page or other record, with an anchor on its page if you need one, or an address, and give it a '
+                    . 'label, or leave the label empty to use the page\'s own title. With no link it is text only.',
+            ],
+            [$field?->label, $field?->description],
+        );
+    }
+
+    #[Test]
     public function theLinkOffersCreateNewUnderThePathGivenWhenAsked(): void
     {
         static::assertSame(

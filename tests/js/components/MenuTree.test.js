@@ -113,6 +113,16 @@ describe('MenuTree', () => {
         expect(posted(submitted[0])).toEqual({ parent: '', position: '1' })
     })
 
+    it('posts a move of an item with no move address to the page it is on', () => {
+        const tree = drawTree()
+        mount(tree)
+        document.getElementById('home').removeAttribute('data-move-url')
+
+        reorder(tree, 'home', 1)
+
+        expect(submitted[0].action).toBe(window.location.href)
+    })
+
     it('posts the move as a hidden form it adds to the page', () => {
         const tree = drawTree()
         mount(tree)
