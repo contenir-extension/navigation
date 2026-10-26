@@ -32,13 +32,13 @@ final class HistoryHandler implements HandlerInterface
      *
      * @return list<array{id: int, published: string, by: string|null, note: string|null, live: bool}>
      */
-    private static function revisions(array $revisions, ?int $live): array
+    private static function revisions(array $revisions, ?int $live, SiteTime $time): array
     {
         $shown = [];
         foreach ($revisions as $revision) {
             $shown[] = [
                 'id'        => (int) $revision->id,
-                'published' => $revision->created->format('j M Y, g:i a'),
+                'published' => $time->show($revision->created),
                 'by'        => $revision->publishedBy?->name,
                 'note'      => $revision->note,
                 'live'      => $revision->id === $live,
@@ -69,7 +69,11 @@ final class HistoryHandler implements HandlerInterface
             "{$menu->title} history",
             [
                 'menu'      => ['id' => $menu->id, 'title' => $menu->title],
-                'revisions' => self::revisions($menus->repository->revisions((int) $menu->id), $menu->revisionId),
+                'revisions' => self::revisions(
+                    $menus->repository->revisions((int) $menu->id),
+                    $menu->revisionId,
+                    new SiteTime($context->clock()),
+                ),
             ],
             parent: new ParentPage('Navigation', MenusHandler::NAME, ['menu' => (int) $menu->id]),
         );

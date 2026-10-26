@@ -22,13 +22,17 @@ final class MenuState
      * @throws NotFoundException When the menu's live revision is gone.
      * @throws StorageException
      */
-    public static function of(Navigation $menu, NavigationRepositoryInterface $repository, Publisher $publisher): array
-    {
+    public static function of(
+        Navigation $menu,
+        NavigationRepositoryInterface $repository,
+        Publisher $publisher,
+        SiteTime $time,
+    ): array {
         $revision = null === $menu->revisionId ? null : $repository->revision($menu->revisionId);
 
         return [
             'live'      => null !== $revision,
-            'published' => $revision?->created->format('j M Y, g:i a'),
+            'published' => null === $revision ? null : $time->show($revision->created),
             'by'        => $revision?->publishedBy?->name,
             'changes'   => $publisher->unpublishedChanges((int) $menu->id),
         ];

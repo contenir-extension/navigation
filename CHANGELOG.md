@@ -19,6 +19,8 @@ Requires contenir/contenir-extension-api 0.7.3 and contenir/contenir-navigation 
   as a revision with who made it. Publishing needs Approve; once a menu is live, anyone who may change it changes the
   site's menu.
 - Publishing asks for no note, and History puts an earlier version back on the site.
+- Times on the Navigation and history screens show in the site's timezone, the zone of the clock the host lends,
+  rather than in the UTC the tables hold.
 - A menu's handle is labelled Identifier. It fills from the Title as you type, until you change it, and keeps to the
   handle rule (lowercase letters, digits and dashes, at most 64 characters).
 - Where it appears sits in an Info card in the sidebar, beside the menu's Title and Identifier.

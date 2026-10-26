@@ -82,7 +82,12 @@ final class MenusHandler implements HandlerInterface
                     'title'       => $chosen->title,
                     'handle'      => $chosen->handle,
                     'description' => $chosen->description,
-                    'state'       => MenuState::of($chosen, $menus->repository, $menus->publisher),
+                    'state'       => MenuState::of(
+                        $chosen,
+                        $menus->repository,
+                        $menus->publisher,
+                        new SiteTime($context->clock()),
+                    ),
                     'tree'        => (new TreeRows($menus->records))->rows(
                         Tree::build($menus->repository->items((int) $chosen->id)),
                     ),
