@@ -66,6 +66,14 @@ final class ItemFormTest extends TestCase
     }
 
     #[Test]
+    public function anItemsVisibilityIsASwitchCalledVisible(): void
+    {
+        $field = ItemForm::editing(self::PARENTS, [])->field('active');
+
+        static::assertSame(['Visible', ['switch' => true]], [$field?->label, $field?->attributes]);
+    }
+
+    #[Test]
     public function anItemThatExistsAlsoAsksHowItIsDrawn(): void
     {
         static::assertSame(
@@ -105,9 +113,9 @@ final class ItemFormTest extends TestCase
     {
         static::assertSame(
             [
-                ['create' => true, 'prefix' => '/about'],
-                ['create' => false, 'prefix' => ''],
-                ['create' => false, 'prefix' => ''],
+                ['create' => true, 'prefix' => '/about', 'label' => 'label'],
+                ['create' => false, 'prefix' => '', 'label' => 'label'],
+                ['create' => false, 'prefix' => '', 'label' => 'label'],
             ],
             [
                 ItemForm::adding(self::PARENTS, [], true, '/about')->field('link')?->attributes,

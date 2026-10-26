@@ -80,10 +80,11 @@ final class ItemForm
             ),
             new Field(
                 'active',
-                'Show on the site',
+                'Visible',
                 FieldType::Checkbox,
                 'Turn off to hide the item without deleting it.',
                 default: $value('active') ?? true,
+                attributes: ['switch' => true],
             ),
         ]);
     }
@@ -105,14 +106,14 @@ final class ItemForm
                 'link',
                 'Links to',
                 FieldType::Link,
-                'A page or other record, with the spot on its page if you need one, or an address. Leave it empty for text only.',
+                'A page or other record, with an anchor on its page if you need one, or an address. Leave it empty for text only.',
                 default: $value('link'),
-                attributes: ['create' => $create, 'prefix' => (string) $prefix],
+                attributes: ['create' => $create, 'prefix' => (string) $prefix, 'label' => 'label'],
             ),
             new Field(
                 'label',
                 'Label',
-                description: 'Needed for an address or text; a page uses its own title unless you give one.',
+                description: 'Leave it empty to use the page\'s own title; an address or text needs one.',
                 default: $value('label'),
             ),
             new Field(
