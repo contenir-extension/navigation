@@ -2,7 +2,8 @@
 /**
  * The Navigation section's home: the page header with Add menu, a switcher of the site's menus,
  * and the chosen menu's card: where it stands (not live until published once, then live, with when
- * it last changed and by whom), its actions, and its tree of items, each with its own actions.
+ * it last changed and by whom), with Edit menu, Publish until it is live and a menu of the rest
+ * (History, then Delete menu) at its top right, and its tree of items, each with its own actions.
  *
  * @var array{
  *     menus: list<array{id: int, title: string, current: bool}>,
@@ -54,25 +55,41 @@ $menu = $values['menu'];
                 </nav>
 
                 <div class="card">
-                    <div class="card__header card__header--between">
+                    <div class="card__header card__header--row">
                         <div>
                             <h2 class="card__title"><?= $view->escape($menu['title']) ?> <span class="badge badge--outline"><?= $view->escape($menu['handle']) ?></span></h2>
                             <p class="card__description">
 <?php if (! $state['live']): ?>
-                                <span class="badge badge--warning-muted">Not live</span> Publish it once to put it on the site. After that, changes go live as you save them.
+                                Publish it once to put it on the site. After that, changes go live as you save them. <span class="badge badge--warning-muted">Not live</span>
 <?php elseif (0 === $state['changes']): ?>
-                                <span class="badge badge--success-muted">Live</span> Last changed <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
+                                Last changed <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?> <span class="badge badge--success-muted">Live</span>
 <?php else: ?>
-                                <span class="badge badge--info-muted"><?= $state['changes'] ?> unpublished <?= 1 === $state['changes'] ? 'change' : 'changes' ?></span> Published <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
+                                Published <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?> <span class="badge badge--info-muted"><?= $state['changes'] ?> unpublished <?= 1 === $state['changes'] ? 'change' : 'changes' ?></span>
 <?php endif ?>
                             </p>
 <?php if (null !== $menu['description']): ?>
                             <p class="card__description"><?= $view->escape($menu['description']) ?></p>
 <?php endif ?>
                         </div>
-                        <div class="cluster cluster--gap-sm">
-                            <a class="btn btn--ghost btn--sm" href="<?= $view->escape($view->url('history', ['menu' => $menu['id']])) ?>"><?= $view->icon('history') ?><span>History</span></a>
-                            <a class="btn btn--ghost btn--sm" href="<?= $view->escape($view->url('menu-edit', ['menu' => $menu['id']])) ?>"><?= $view->icon('pencil') ?><span>Edit menu</span></a>
+                        <div class="cluster cluster--xs">
+                            <a class="btn btn--outline btn--sm" href="<?= $view->escape($view->url('menu-edit', ['menu' => $menu['id']])) ?>"><?= $view->icon('pencil') ?><span>Edit menu</span></a>
+<?php if (! $state['live'] || $state['changes'] > 0): ?>
+                            <form method="post" action="<?= $view->escape($view->url('publish', ['menu' => $menu['id']])) ?>">
+                                <?= $view->token() ?>
+                                <button type="submit" class="btn btn--primary btn--sm"><?= $view->icon('upload') ?><span>Publish</span></button>
+                            </form>
+<?php endif ?>
+                            <div class="dropdown dropdown--right">
+                                <button type="button" class="btn btn--outline btn--icon btn--sm dropdown__trigger" aria-haspopup="menu" aria-expanded="false" aria-label="More for <?= $view->escape($menu['title']) ?>" data-toggle data-toggle-target="#menu-more" data-toggle-capture="true"><?= $view->icon('dots-vertical') ?></button>
+                                <div class="dropdown__menu" id="menu-more" role="menu">
+                                    <a class="dropdown__item" role="menuitem" href="<?= $view->escape($view->url('history', ['menu' => $menu['id']])) ?>"><?= $view->icon('history') ?><span class="dropdown__item-text">History</span></a>
+                                    <div class="dropdown__divider" role="separator"></div>
+                                    <form method="post" action="<?= $view->escape($view->url('menu-delete', ['menu' => $menu['id']])) ?>" data-confirm="Delete this menu and every item in it? Pages and records are kept.">
+                                        <?= $view->token() ?>
+                                        <button type="submit" class="dropdown__item dropdown__item--destructive" role="menuitem"><?= $view->icon('trash') ?><span class="dropdown__item-text">Delete menu</span></button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="card__content">
@@ -90,21 +107,8 @@ $menu = $values['menu'];
                         </div>
 <?php endif ?>
                     </div>
-                    <div class="card__footer card__footer--between">
+                    <div class="card__footer">
                         <a class="btn btn--outline" href="<?= $view->escape($view->url('item-add', ['menu' => $menu['id']])) ?>"><?= $view->icon('plus') ?><span>Add item</span></a>
-<?php if (! $state['live'] || $state['changes'] > 0): ?>
-                        <form method="post" action="<?= $view->escape($view->url('publish', ['menu' => $menu['id']])) ?>">
-                            <?= $view->token() ?>
-                            <button type="submit" class="btn btn--primary"><?= $view->icon('upload') ?><span>Publish</span></button>
-                        </form>
-<?php endif ?>
                     </div>
-                </div>
-
-                <div class="mt--md">
-                    <form method="post" action="<?= $view->escape($view->url('menu-delete', ['menu' => $menu['id']])) ?>" onsubmit="return confirm('Delete this menu and every item in it? Pages and records are kept.')">
-                        <?= $view->token() ?>
-                        <button type="submit" class="btn btn--ghost btn--sm btn--destructive"><?= $view->icon('trash') ?><span>Delete menu</span></button>
-                    </form>
                 </div>
 <?php endif ?>
