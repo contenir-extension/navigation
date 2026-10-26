@@ -18,14 +18,30 @@ use PHPUnit\Framework\TestCase;
 use function str_repeat;
 
 /**
- * The visibility switch on a live menu, whose change goes on the site as a revision recorded
- * with who made it.
+ * Changes that put a revision on the site, recorded with who made it: publishing a menu, and the
+ * visibility switch on a live one, each saying why when the editor can't be recorded.
  */
 #[Group('integration')]
 #[Group('handler')]
-final class ItemVisibilityHandlerTest extends TestCase
+final class RecordedChangesTest extends TestCase
 {
     use NavigationHostTrait;
+
+    #[Test]
+    public function publishingSaysWhyWhenItsEditorCannotBeRecorded(): void
+    {
+        $this->setUpHost([
+            CurrentEditorInterface::class => new ChangeableEditor(new Editor(str_repeat('a', times: 65), 'Ann Editor')),
+        ]);
+        $menu = $this->menu();
+
+        $result = $this->answer(PublishHandler::class, ['menu' => $menu], []);
+
+        static::assertSame(
+            ["/admin/extension/navigation/menus?menu={$menu}", 'danger'],
+            [$result->url, $result->messages[0]['level'] ?? null],
+        );
+    }
 
     #[Test]
     public function theSwitchOnALiveMenuSaysWhyWhenItsEditorCannotBeRecorded(): void
