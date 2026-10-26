@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Contenir\Extension\Navigation\Tests\Unit\Admin;
 
 use Contenir\Extension\Api\Form\Field;
+use Contenir\Extension\Api\Form\Form;
+use Contenir\Extension\Api\Form\Group as FormGroup;
 use Contenir\Extension\Navigation\Admin\ItemForm;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\Test;
@@ -35,6 +37,22 @@ final class ItemFormTest extends TestCase
         ], $fields);
     }
 
+    /**
+     * @return list<array{string, string, list<list<string>>, bool}>
+     */
+    private static function groupsOf(Form $form): array
+    {
+        return array_map(
+            static fn(FormGroup $group): array => [
+                $group->id,
+                $group->legend,
+                $group->rows,
+                $group->folded,
+            ],
+            $form->groups,
+        );
+    }
+
     #[Test]
     public function aNewItemAsksWhatItLinksToItsLabelAndWhereItSits(): void
     {
@@ -46,6 +64,15 @@ final class ItemFormTest extends TestCase
                 ['parent', 'select',   false, ''],
             ],
             self::fields(ItemForm::adding(self::PARENTS)->fields),
+        );
+    }
+
+    #[Test]
+    public function aNewItemFoldsItsTextAndPlaceAwayUnderAdvanced(): void
+    {
+        static::assertSame(
+            [['item', '', [['link']], false], ['advanced', 'Advanced', [['html'], ['parent']], true]],
+            self::groupsOf(ItemForm::adding(self::PARENTS)),
         );
     }
 
@@ -89,6 +116,18 @@ final class ItemFormTest extends TestCase
     }
 
     #[Test]
+    public function anItemThatExistsFoldsAllButItsLinkAndVisibilityAwayUnderAdvanced(): void
+    {
+        static::assertSame(
+            [
+                ['item', '', [['link'], ['active']], false],
+                ['advanced', 'Advanced', [['html'], ['parent'], ['display'], ['icon'], ['new_tab'], ['class']], true],
+            ],
+            self::groupsOf(ItemForm::editing(self::PARENTS, [])),
+        );
+    }
+
+    #[Test]
     public function anItemThatExistsShowsItsDrawing(): void
     {
         $form = ItemForm::editing(self::PARENTS, [
@@ -113,9 +152,9 @@ final class ItemFormTest extends TestCase
     {
         static::assertSame(
             [
-                ['create' => true, 'prefix' => '/about', 'label' => 'label'],
-                ['create' => false, 'prefix' => '', 'label' => 'label'],
-                ['create' => false, 'prefix' => '', 'label' => 'label'],
+                ['create' => true, 'prefix' => '/about', 'label' => 'label', 'external' => 'new_tab'],
+                ['create' => false, 'prefix' => '', 'label' => 'label', 'external' => 'new_tab'],
+                ['create' => false, 'prefix' => '', 'label' => 'label', 'external' => 'new_tab'],
             ],
             [
                 ItemForm::adding(self::PARENTS, [], true, '/about')->field('link')?->attributes,

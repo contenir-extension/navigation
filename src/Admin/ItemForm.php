@@ -8,12 +8,14 @@ use Contenir\Extension\Api\Exception\InvalidDeclarationException;
 use Contenir\Extension\Api\Form\Field;
 use Contenir\Extension\Api\Form\FieldType;
 use Contenir\Extension\Api\Form\Form;
+use Contenir\Extension\Api\Form\Group;
 use Contenir\Navigation\Menu\Display;
 
 /**
  * A menu item as a described form: what it links to, chosen in the host's
- * link picker, its label and where it sits, and, once it exists, how it is
- * drawn. An item that links to nothing is text only.
+ * link picker, with its label drawn in the picker's bar, and, once it exists,
+ * whether it is visible; its text, where it sits and how it is drawn are
+ * folded away under Advanced. An item that links to nothing is text only.
  */
 final class ItemForm
 {
@@ -41,7 +43,10 @@ final class ItemForm
         bool $create = false,
         ?string $prefix = null,
     ): Form {
-        return new Form(self::linkFields($parents, $values, $create, $prefix));
+        return new Form(self::linkFields($parents, $values, $create, $prefix), [
+            new Group('item', '', ['link']),
+            new Group('advanced', 'Advanced', ['html', 'parent'], folded: true),
+        ]);
     }
 
     /**
@@ -86,6 +91,9 @@ final class ItemForm
                 default: $value('active') ?? true,
                 attributes: ['switch' => true],
             ),
+        ], [
+            new Group('item', '', ['link', 'active']),
+            new Group('advanced', 'Advanced', ['html', 'parent', 'display', 'icon', 'new_tab', 'class'], folded: true),
         ]);
     }
 
@@ -104,11 +112,17 @@ final class ItemForm
         return [
             new Field(
                 'link',
-                'Links to',
+                'Item',
                 FieldType::Link,
-                'A page or other record, with an anchor on its page if you need one, or an address. Leave it empty for text only.',
+                'Choose a page or other record, with an anchor on its page if you need one, or an address, and give it a '
+                    . 'label, or leave the label empty to use the page\'s own title. With no link it is text only.',
                 default: $value('link'),
-                attributes: ['create' => $create, 'prefix' => (string) $prefix, 'label' => 'label'],
+                attributes: [
+                    'create'   => $create,
+                    'prefix'   => (string) $prefix,
+                    'label'    => 'label',
+                    'external' => 'new_tab',
+                ],
             ),
             new Field(
                 'label',
