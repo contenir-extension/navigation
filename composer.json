@@ -15,8 +15,8 @@
     },
     "require": {
         "php": "~8.3.0 || ~8.4.0 || ~8.5.0",
-        "contenir/contenir-extension-api": "^0.7.2",
-        "contenir/contenir-navigation": "^0.1",
+        "contenir/contenir-extension-api": "^0.7.3",
+        "contenir/contenir-navigation": "^0.2",
         "php-db/phpdb": "^0.6.0",
         "psr/clock": "^1.0",
         "psr/container": "^1.1 || ^2.0",
