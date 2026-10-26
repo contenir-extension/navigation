@@ -51,7 +51,7 @@
                                         <div class="dropdown__menu dropdown__menu--right" id="item-<?= $item ?>-more" role="menu">
                                             <a class="dropdown__item" role="menuitem" href="<?= $view->escape($view->url('item-add', ['menu' => $values['menu'], 'parent' => $item])) ?>"><?= $view->icon('plus') ?><span class="dropdown__item-text">Add item below</span></a>
                                             <div class="dropdown__divider" role="separator"></div>
-                                            <form method="post" action="<?= $view->escape($view->url('item-delete', ['item' => $item])) ?>" data-confirm="Delete this item and everything under it? The page or record it links to is kept.">
+                                            <form method="post" action="<?= $view->escape($view->url('item-delete', ['item' => $item])) ?>" data-confirm="Delete this item and everything under it? The page or record it links to is kept." data-confirm-title="Delete item?" data-confirm-button="Delete" data-confirm-tone="destructive">
                                                 <?= $view->token() ?>
                                                 <button type="submit" class="dropdown__item dropdown__item--destructive" role="menuitem"><?= $view->icon('trash') ?><span class="dropdown__item-text">Delete</span></button>
                                             </form>

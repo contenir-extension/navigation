@@ -78,7 +78,7 @@ $status = match (true) {
                                 <div class="dropdown__menu" id="menu-more" role="menu">
                                     <a class="dropdown__item" role="menuitem" href="<?= $view->escape($view->url('history', ['menu' => $menu['id']])) ?>"><?= $view->icon('history') ?><span class="dropdown__item-text">History</span></a>
                                     <div class="dropdown__divider" role="separator"></div>
-                                    <form method="post" action="<?= $view->escape($view->url('menu-delete', ['menu' => $menu['id']])) ?>" data-confirm="Delete this menu and every item in it? Pages and records are kept.">
+                                    <form method="post" action="<?= $view->escape($view->url('menu-delete', ['menu' => $menu['id']])) ?>" data-confirm="Delete this menu and every item in it? Pages and records are kept." data-confirm-title="Delete menu?" data-confirm-button="Delete" data-confirm-tone="destructive">
                                         <?= $view->token() ?>
                                         <button type="submit" class="dropdown__item dropdown__item--destructive" role="menuitem"><?= $view->icon('trash') ?><span class="dropdown__item-text">Delete menu</span></button>
                                     </form>
