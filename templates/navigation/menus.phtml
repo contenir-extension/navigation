@@ -68,7 +68,7 @@ $status = match (true) {
                             <h2 class="card__title"><?= $view->escape($menu['title']) ?> <span class="badge badge--sm badge--<?= $status[0] ?>-muted"><?= $view->escape($status[1]) ?></span></h2>
                             <p class="card__description navmenu__handle">
                                 <span class="text--mono"><?= $view->escape($menu['handle']) ?></span>
-                                <button type="button" class="btn btn--ghost btn--icon btn--sm" data-copytoclipboard data-copytoclipboard-text="<?= $view->escape($menu['handle']) ?>" data-copytoclipboard-success-message="Copied" data-copytoclipboard-error-message="Copy failed" aria-label="Copy the identifier <?= $view->escape($menu['handle']) ?>" data-tooltip="Copy"><?= $view->icon('copy') ?></button>
+                                <button type="button" class="btn btn--ghost btn--icon btn--sm" data-copytoclipboard data-copytoclipboard-text="<?= $view->escape($menu['handle']) ?>" data-copytoclipboard-success-message="Copied" data-copytoclipboard-error-message="Copy failed" aria-label="Copy navigation identifier <?= $view->escape($menu['handle']) ?>" data-tooltip="Copy navigation identifier"><?= $view->icon('copy') ?></button>
                             </p>
 <?php if (null !== $menu['description']): ?>
                             <p class="card__description"><?= $view->escape($menu['description']) ?></p>
