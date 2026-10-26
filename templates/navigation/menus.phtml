@@ -3,7 +3,7 @@
  * The Navigation section's home: the page header with Add menu, a switcher of the site's menus,
  * and the chosen menu's card: its title with where it stands (not live until published once, then
  * live), its identifier to copy and its note; at its top right Edit menu, Publish until it is live
- * and a menu of the rest (History, then Delete menu), with when it last changed and by whom beneath;
+ * and a menu of the rest (History, then Delete menu), with when it was updated beneath, linking to its history;
  * and its tree of items, each with its own actions.
  *
  * @var array{
@@ -98,12 +98,8 @@ $status = match (true) {
                             <p class="text--xs text--muted navmenu__when">
 <?php if (! $state['live']): ?>
                                 Publish it once to put it on the site
-<?php elseif (0 === $state['changes']): ?>
-                                Last changed <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
-
 <?php else: ?>
-                                Published <?= $view->escape((string) $state['published']) ?><?= null === $state['by'] ? '' : ' by ' . $view->escape($state['by']) ?>
-
+                                <a href="<?= $view->escape($view->url('history', ['menu' => $menu['id']])) ?>" title="<?= null === $state['by'] ? 'See its history' : 'By ' . $view->escape($state['by']) . '. See its history' ?>">Updated <?= $view->escape((string) $state['published']) ?></a>
 <?php endif ?>
                             </p>
                         </div>

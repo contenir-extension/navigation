@@ -19,6 +19,10 @@
     text-align: right;
 }
 
+.navmenu__when a {
+    color: inherit;
+}
+
 /* The Navigation screen's menu tree: each item an action bar, the icon of what it links to beside its label. */
 .navtree .actionbar__title > .icon {
     flex-shrink: 0;
