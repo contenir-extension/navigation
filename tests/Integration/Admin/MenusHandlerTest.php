@@ -134,7 +134,7 @@ final class MenusHandlerTest extends TestCase
     #[Test]
     public function showsNoMenuWhenThereAreNone(): void
     {
-        static::assertSame(['menus' => [], 'menu' => null], $this->shown());
+        static::assertSame(['menu' => null], $this->shown());
     }
 
     #[Test]
@@ -154,19 +154,8 @@ final class MenusHandlerTest extends TestCase
         $footer = $this->menu('footer', 'Footer');
 
         static::assertSame(
-            [
-                'Header',
-                'Footer',
-                [
-                    ['id' => 1, 'title' => 'Header', 'current' => false],
-                    ['id' => 2, 'title' => 'Footer', 'current' => true],
-                ],
-            ],
-            [
-                $this->shown()['menu']['title'],
-                $this->shown(['menu' => $footer])['menu']['title'],
-                $this->shown(['menu' => $footer])['menus'],
-            ],
+            ['Header', 'Footer'],
+            [$this->shown()['menu']['title'], $this->shown(['menu' => $footer])['menu']['title']],
         );
     }
 

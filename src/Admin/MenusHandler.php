@@ -18,9 +18,9 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
- * The Navigation section's home: a switcher of the site's menus, and the
- * chosen menu's tree with where it stands and what can be done with it. It
- * shows the first menu unless the query names another.
+ * The Navigation section's home: the chosen menu's tree with where it stands
+ * and what can be done with it. It shows the first menu unless the query
+ * names another; Site Pages' section menu lists them all ({@see MenusMenu}).
  */
 final class MenusHandler implements HandlerInterface
 {
@@ -43,23 +43,6 @@ final class MenusHandler implements HandlerInterface
     }
 
     /**
-     * What the switcher shows of each menu.
-     *
-     * @param list<Navigation> $menus
-     *
-     * @return list<array{id: int, title: string, current: bool}>
-     */
-    private static function tabs(array $menus, ?Navigation $chosen): array
-    {
-        $tabs = [];
-        foreach ($menus as $menu) {
-            $tabs[] = ['id' => (int) $menu->id, 'title' => $menu->title, 'current' => $menu->id === $chosen?->id];
-        }
-
-        return $tabs;
-    }
-
-    /**
      * @throws StorageException            When the menus can't be read.
      * @throws NotFoundException           When a menu's live revision is gone.
      * @throws ContainerExceptionInterface When the host can't make one of its services.
@@ -74,8 +57,7 @@ final class MenusHandler implements HandlerInterface
         $chosen = self::chosen($all, $id);
 
         return HandlerResult::template('navigation/menus', 'Navigation', [
-            'menus' => self::tabs($all, $chosen),
-            'menu'  => null === $chosen
+            'menu' => null === $chosen
                 ? null
                 : [
                     'id'          => $chosen->id,

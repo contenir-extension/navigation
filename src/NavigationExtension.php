@@ -18,6 +18,7 @@ use Contenir\Extension\Navigation\Admin\MenuAddHandler;
 use Contenir\Extension\Navigation\Admin\MenuDeleteHandler;
 use Contenir\Extension\Navigation\Admin\MenuEditHandler;
 use Contenir\Extension\Navigation\Admin\MenusHandler;
+use Contenir\Extension\Navigation\Admin\MenusMenu;
 use Contenir\Extension\Navigation\Admin\PublishHandler;
 use Contenir\Extension\Navigation\Admin\RestoreHandler;
 use Override;
@@ -27,7 +28,7 @@ use function dirname;
 /**
  * Managed site navigation: the Navigation section of Site Pages, where
  * editors build the site's menus as drafts, publish them, and restore older
- * revisions. Every screen is guarded by that section. The navigation tables
+ * revisions. Site Pages' section menu lists each menu in the section's place. Every screen is guarded by that section. The navigation tables
  * belong to contenir/contenir-navigation, whose migrations the CMS runs
  * against the site's database.
  */
@@ -73,6 +74,7 @@ final readonly class NavigationExtension implements ExtensionInterface
     {
         $root = dirname(__DIR__);
         $registry->module("{$root}/config/admin.xml");
+        $registry->menu(MenusMenu::class);
         $registry->templates("{$root}/templates");
         $registry->assets("{$root}/public");
         $registry->component(self::TREE_COMPONENT, 'js/MenuTree.js');

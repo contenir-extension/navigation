@@ -1,12 +1,11 @@
 <?php
 /**
- * The Navigation section's home: the page header with Add menu, a switcher of the site's menus,
- * and the chosen menu's card: where it stands (not live until published once, then live, with when
- * it last changed and by whom), with Edit menu, Publish until it is live and a menu of the rest
- * (History, then Delete menu) at its top right, and its tree of items, each with its own actions.
+ * The Navigation section's home, with every menu listed in the section menu: the page header with
+ * Add menu, and the chosen menu's card: where it stands (not live until published once, then live,
+ * with when it last changed and by whom), with Edit menu, Publish until it is live and a menu of the
+ * rest (History, then Delete menu) at its top right, and its tree of items, each with its own actions.
  *
  * @var array{
- *     menus: list<array{id: int, title: string, current: bool}>,
  *     menu: array{
  *         id: int|null,
  *         title: string,
@@ -46,14 +45,6 @@ $menu = $values['menu'];
                 </div>
 <?php else: ?>
 <?php $state = $menu['state']; ?>
-                <nav class="tabs tabs--underline mb--md" aria-label="Menus">
-                    <div class="tabs__list">
-<?php foreach ($values['menus'] as $tab): ?>
-                        <a class="tabs__trigger<?= $tab['current'] ? ' tabs__trigger--active' : '' ?>" href="<?= $view->escape($view->url('menus', ['menu' => $tab['id']])) ?>"<?php if ($tab['current']): ?> aria-current="page"<?php endif ?>><span><?= $view->escape($tab['title']) ?></span></a>
-<?php endforeach ?>
-                    </div>
-                </nav>
-
                 <div class="card">
                     <div class="card__header card__header--row">
                         <div>
