@@ -11,8 +11,7 @@
         "test:coverage": "vitest run --coverage"
     },
     "dependencies": {
-        "@parallelogram-js/core": "0.7.21",
-        "sortablejs": "^1.15.0"
+        "@parallelogram-js/core": "0.7.21"
     },
     "devDependencies": {
         "@vitest/coverage-v8": "^4.1.11",

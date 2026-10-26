@@ -7,15 +7,3 @@
 .navtree__path {
     font-family: var(--font-mono, monospace);
 }
-
-/* An item's list for the items under it stays out of the way until one is dragged, then opens as a drop zone. */
-.navtree .navtree--empty {
-    display: none;
-}
-
-.navtree--dragging .navtree--empty {
-    display: flex;
-    min-height: 2.5rem;
-    border: 1px dashed var(--border, currentColor);
-    border-radius: var(--radius-md, 0.25rem);
-}
