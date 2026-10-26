@@ -3,15 +3,19 @@
  * One level of a menu's tree, each item an action bar as Site Pages draws a page: its grip, a
  * toggle for the items under it, its icon beside its label and path with a badge where the site
  * won't show it as it is, a switch that shows or hides it, Edit, and a menu of the rest (add an
- * item under it, delete it). The items nested under it are drawn the same way. Every item holds a
- * list for the items under it, empty when it has none, so the MenuTree component can drag an item
- * under any other.
+ * item under it, delete it). The items nested under it are drawn the same way, in a list of their
+ * own. The top list is the dashboard's sortable action bar tree: an item is dragged by its grip, or
+ * moved with the keyboard, to another place or under another item, and MenuTree posts the move.
  *
- * @var array{menu: int, parent: int|null, rows: list<array<string, mixed>>} $values
+ * @var array{menu: int, parent: int|null, label?: string, rows: list<array<string, mixed>>} $values
  * @var \Contenir\Extension\Api\Module\TemplateHelpersInterface $view
  */
 ?>
-                        <ul class="actionbar__list navtree<?php if ([] === $values['rows']): ?> navtree--empty<?php endif ?>"<?php if (null !== $values['parent']): ?> id="item-<?= $values['parent'] ?>-children"<?php endif ?> data-navtree data-menu="<?= $values['menu'] ?>" data-parent="<?= $values['parent'] ?? '' ?>">
+<?php if (null === $values['parent']): ?>
+                        <ul class="actionbar__list navtree" aria-label="Menu items" data-navtree data-actionbar-sortable="tree">
+<?php else: ?>
+                        <ul class="actionbar__list" id="item-<?= $values['parent'] ?>-children" aria-label="Items under <?= $view->escape((string) ($values['label'] ?? '')) ?>">
+<?php endif ?>
 <?php foreach ($values['rows'] as $row): ?>
 <?php
     /** @var array{id: int, label: string, icon: string, path: string|null, badge: string|null, active: bool, drawn: string, children: list<array<string, mixed>>} $row */
@@ -19,9 +23,9 @@
     $label = $view->escape($row['label']);
     $edit  = $view->escape($view->url('item-edit', ['item' => $item]));
 ?>
-                            <li data-navtree-item data-move-url="<?= $view->escape($view->url('item-move', ['item' => $item])) ?>">
+                            <li id="item-<?= $item ?>" data-item="<?= $item ?>" data-move-url="<?= $view->escape($view->url('item-move', ['item' => $item])) ?>">
                                 <div class="actionbar">
-                                    <button type="button" class="actionbar__segment actionbar__handle" data-navtree-handle aria-label="Reorder <?= $label ?>"><?= $view->icon('grip-vertical') ?></button>
+                                    <button type="button" class="actionbar__segment actionbar__handle" aria-label="Reorder <?= $label ?>"><?= $view->icon('grip-vertical') ?></button>
 <?php if ([] === $row['children']): ?>
                                     <span class="actionbar__segment actionbar__toggle" aria-hidden="true"></span>
 <?php else: ?>
@@ -54,7 +58,9 @@
                                         </div>
                                     </div>
                                 </div>
-                                <?= $view->render('navigation/tree', ['menu' => $values['menu'], 'parent' => $item, 'rows' => $row['children']]) ?>
+<?php if ([] !== $row['children']): ?>
+                                <?= $view->render('navigation/tree', ['menu' => $values['menu'], 'parent' => $item, 'label' => $row['label'], 'rows' => $row['children']]) ?>
+<?php endif ?>
                             </li>
 <?php endforeach ?>
                         </ul>

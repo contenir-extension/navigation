@@ -21,15 +21,16 @@ Requires contenir/contenir-extension-api 0.7.3 and contenir/contenir-navigation 
 - Publishing asks for no note, and History puts an earlier version back on the site.
 - A menu's items draw as action bars, as Site Pages draws its pages: a grip to drag by, the icon of what it links to
   beside its label and address, a Show switch that shows or hides it straight from the tree (the new `item-visibility`
-  handler, needing Update), Edit, and a menu with Add item below and Delete. The up and down buttons are gone; drag to
-  reorder.
+  handler, needing Update), Edit, and a menu with Add item below and Delete. The up and down buttons are gone: the tree
+  is the dashboard's sortable action bar tree, so an item is dragged by its grip, or moved with the keyboard (Space,
+  then the arrow keys), and SortableJS is no longer a dependency.
 - An item's "Spot on the page" is part of its link: typed after the chosen page in the link field, or into an address
   as its fragment. "Under" is labelled Parent, its first choice "None (top level)".
 - Times on the Navigation and history screens show in the site's timezone, the zone of the clock the host lends,
   rather than in the UTC the tables hold.
 - A menu's handle is labelled Identifier. It fills from the Title as you type, until you change it, and keeps to the
   handle rule (lowercase letters, digits and dashes, at most 64 characters).
-- Where it appears sits in an Info card in the sidebar, beside the menu's Title and Identifier.
+- The Identifier and Where it appears sit in an Info card in the sidebar, beside the menu's Title.
 - The Navigation and history screens' headers pin as the page scrolls, their descriptions below them.
 - An identifier another menu has is saved rather than refused. The form warns beside it while it is shared, naming the
   other menus and which one the site shows (the first published in menu order), and the save says so too.

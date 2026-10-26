@@ -84,10 +84,10 @@ final class MenuFormTest extends TestCase
     }
 
     #[Test]
-    public function keepsWhereItAppearsInTheSidebarsInfoCard(): void
+    public function keepsTheIdentifierAndWhereItAppearsInTheSidebarsInfoCard(): void
     {
         static::assertSame(
-            [['menu', 'Menu', false, ['title', 'handle']], ['info', 'Info', true, ['description']]],
+            [['menu', 'Menu', false, ['title']], ['info', 'Info', true, ['handle', 'description']]],
             array_map(
                 static fn(FormGroup $group): array => [$group->id, $group->legend, $group->aside, $group->fieldNames()],
                 MenuForm::of()->groups,

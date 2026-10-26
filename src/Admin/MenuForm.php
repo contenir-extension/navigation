@@ -21,9 +21,9 @@ use function implode;
 use function sprintf;
 
 /**
- * A menu's settings as a described form: its title and the identifier templates ask for it by, filled
- * from the title until the editor changes it, and in the sidebar's Info card where it appears on
- * the site. An identifier other menus have too is allowed; the form says which menu the site shows.
+ * A menu's settings as a described form: its title, and in the sidebar's Info card the identifier
+ * templates ask for it by, filled from the title until the editor changes it, and where it appears
+ * on the site. An identifier other menus have too is allowed; the form says which menu the site shows.
  */
 final class MenuForm
 {
@@ -69,8 +69,8 @@ final class MenuForm
                 ),
             ],
             [
-                new Group('menu', 'Menu', ['title', 'handle']),
-                new Group('info', 'Info', ['description'], aside: true),
+                new Group('menu', 'Menu', ['title']),
+                new Group('info', 'Info', ['handle', 'description'], aside: true),
             ],
         );
     }
