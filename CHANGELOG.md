@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `Event\MenuPostChange`, fired once a change to a menu reaches the site: publishing it, restoring a revision into a
+  live menu, a change saved to a live menu, and editing or deleting a live menu. It implements the extension API's
+  `SiteChangeEventInterface`, so the CMS clears the site's caches and sends its webhook after it.
+
+### Changed
+
+- Deleting a menu that is already gone says so, rather than reporting it deleted.
+
 ## [0.2.0] - 2026-10-26
 
 Requires contenir/contenir-extension-api 0.7.3 and contenir/contenir-navigation 0.2.
