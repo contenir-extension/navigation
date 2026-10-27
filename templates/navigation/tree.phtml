@@ -2,8 +2,9 @@
 /**
  * One level of a menu's tree, each item an action bar as Site Pages draws a page: its grip, a
  * toggle for the items under it, its icon beside its label and path with a badge where the site
- * won't show it as it is, a switch that shows or hides it, Edit, and a menu of the rest (add an
- * item under it, delete it). The items nested under it are drawn the same way, in a list of their
+ * won't show it as it is, a switch that shows or hides it, Edit (for an item linked to a record, a
+ * menu of Edit navigation item and Edit linked Page, or whatever the record is), and a menu of the
+ * rest (add an item under it, delete it). The items nested under it are drawn the same way, in a list of their
  * own. The top list is the dashboard's sortable action bar tree: an item is dragged by its grip, or
  * moved with the keyboard, to another place or under another item, and MenuTree posts the move.
  *
@@ -18,7 +19,7 @@
 <?php endif ?>
 <?php foreach ($values['rows'] as $row): ?>
 <?php
-    /** @var array{id: int, label: string, icon: string, path: string|null, badge: string|null, active: bool, drawn: string, children: list<array<string, mixed>>} $row */
+    /** @var array{id: int, label: string, icon: string, path: string|null, badge: string|null, active: bool, drawn: string, linked: array{url: string, type: string}|null, children: list<array<string, mixed>>} $row */
     $item  = $row['id'];
     $label = $view->escape($row['label']);
     $edit  = $view->escape($view->url('item-edit', ['item' => $item]));
@@ -45,7 +46,17 @@
                                         <?= $view->token() ?>
                                         <label class="switch switch--sm"><input type="checkbox" class="switch__input" role="switch" name="active" value="1"<?= $row['active'] ? ' checked' : '' ?> data-navtree-visibility aria-label="Show <?= $label ?> on the site"><span class="switch__label">Show</span></label>
                                     </form>
+<?php if (null === $row['linked']): ?>
                                     <a href="<?= $edit ?>" class="actionbar__segment"><?= $view->icon('pencil') ?><span>Edit</span></a>
+<?php else: ?>
+                                    <div class="actionbar__segment dropdown">
+                                        <button type="button" class="actionbar__trigger dropdown__trigger navtree__edit" aria-haspopup="menu" aria-label="Edit <?= $label ?>" data-toggle data-toggle-target="#item-<?= $item ?>-edit" data-toggle-capture="true"><?= $view->icon('pencil') ?><span>Edit</span><?= $view->icon('chevron-down') ?></button>
+                                        <div class="dropdown__menu dropdown__menu--right navtree__edit-menu" id="item-<?= $item ?>-edit" role="menu">
+                                            <a class="dropdown__item" role="menuitem" href="<?= $edit ?>"><?= $view->icon('pencil') ?><span class="dropdown__item-text">Edit navigation item</span></a>
+                                            <a class="dropdown__item" role="menuitem" href="<?= $view->escape($row['linked']['url']) ?>"><?= $view->icon('file-text') ?><span class="dropdown__item-text">Edit linked <?= $view->escape($row['linked']['type']) ?></span></a>
+                                        </div>
+                                    </div>
+<?php endif ?>
                                     <div class="actionbar__segment dropdown">
                                         <button type="button" class="actionbar__trigger dropdown__trigger" aria-haspopup="menu" aria-label="More for <?= $label ?>" data-toggle data-toggle-target="#item-<?= $item ?>-more" data-toggle-capture="true"><?= $view->icon('dots-vertical') ?></button>
                                         <div class="dropdown__menu dropdown__menu--right" id="item-<?= $item ?>-more" role="menu">

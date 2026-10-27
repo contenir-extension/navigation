@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- An item linked to a page or other record edits either from the Navigation screen: its Edit opens a menu of Edit
+  navigation item and Edit linked Page (or whatever the record's section calls it), the second opening the record's
+  own form in the CMS. An address or a text item keeps the plain Edit.
 - `Event\MenuPostChange`, fired once a change to a menu reaches the site: publishing it, restoring a revision into a
   live menu, a change saved to a live menu, and editing or deleting a live menu. It implements the extension API's
   `SiteChangeEventInterface`, so the CMS clears the site's caches and sends its webhook after it.
