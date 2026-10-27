@@ -67,7 +67,6 @@ final class ItemAddHandler implements HandlerInterface
             ItemChoices::parents($items),
             $values,
             null !== $menus->records,
-            NewPage::prefix($menus->records, $under),
         );
         if ('POST' !== $request->getMethod()) {
             return self::screen($menu, $form(['parent' => (string) $parent]));

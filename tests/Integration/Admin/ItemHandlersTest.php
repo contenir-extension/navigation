@@ -104,7 +104,7 @@ final class ItemHandlersTest extends TestCase
 
         static::assertSame(
             [
-                ['create' => true, 'prefix' => '/about', 'label' => 'label', 'external' => 'new_tab'],
+                ['create' => true, 'label' => 'label', 'external' => 'new_tab'],
                 ['' => 'None (top level)', '1' => '— page 1'],
                 '1',
             ],
@@ -169,7 +169,7 @@ final class ItemHandlersTest extends TestCase
         $result = $this->answer(ItemAddHandler::class, ['menu' => $this->menu, 'parent' => (int) $shop->id]);
 
         static::assertSame(
-            ['create' => true, 'prefix' => '', 'label' => 'label', 'external' => 'new_tab'],
+            ['create' => true, 'label' => 'label', 'external' => 'new_tab'],
             $this->field($result, 'link')?->attributes,
         );
     }
@@ -330,7 +330,7 @@ final class ItemHandlersTest extends TestCase
         $result = $this->answer(ItemEditHandler::class, ['item' => (int) $team->id]);
 
         static::assertSame(
-            ['create' => true, 'prefix' => '/about', 'label' => 'label', 'external' => 'new_tab'],
+            ['create' => true, 'label' => 'label', 'external' => 'new_tab'],
             $this->field($result, 'link')?->attributes,
         );
     }

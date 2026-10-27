@@ -167,9 +167,9 @@ final class ItemFormTest extends TestCase
     {
         static::assertSame(
             [
-                ['create' => true, 'prefix' => '/about', 'label' => 'label', 'external' => 'new_tab'],
-                ['create' => false, 'prefix' => '', 'label' => 'label', 'external' => 'new_tab'],
-                ['create' => false, 'prefix' => '', 'label' => 'label', 'external' => 'new_tab'],
+                ['create' => true, 'label' => 'label', 'external' => 'new_tab'],
+                ['create' => false, 'label' => 'label', 'external' => 'new_tab'],
+                ['create' => false, 'label' => 'label', 'external' => 'new_tab'],
             ],
             [
                 ItemForm::adding(self::PARENTS, [], true, '/about')->field('link')?->attributes,
