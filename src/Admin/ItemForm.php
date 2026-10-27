@@ -33,17 +33,12 @@ final class ItemForm
      *
      * @param array<string, string>      $parents Choices of parent, by id, "" for the top of the menu
      * @param array<string, scalar|null> $values
-     * @param ?string                    $prefix  The path a new page's suggested path starts with
      *
      * @throws InvalidDeclarationException Never: the fields are fixed.
      */
-    public static function adding(
-        array $parents,
-        array $values = [],
-        bool $create = false,
-        ?string $prefix = null,
-    ): Form {
-        return new Form(self::linkFields($parents, $values, $create, $prefix), [
+    public static function adding(array $parents, array $values = [], bool $create = false): Form
+    {
+        return new Form(self::linkFields($parents, $values, $create), [
             new Group('item', '', ['link']),
             new Group('advanced', 'Advanced', ['html', 'parent'], folded: true),
         ]);
@@ -57,12 +52,12 @@ final class ItemForm
      *
      * @throws InvalidDeclarationException Never: the fields are fixed.
      */
-    public static function editing(array $parents, array $values, bool $create = false, ?string $prefix = null): Form
+    public static function editing(array $parents, array $values, bool $create = false): Form
     {
         $value = static fn(string $name): string|int|float|bool|null => $values[$name] ?? null;
 
         return new Form([
-            ...self::linkFields($parents, $values, $create, $prefix),
+            ...self::linkFields($parents, $values, $create),
             new Field(
                 'display',
                 'Show',
@@ -105,7 +100,7 @@ final class ItemForm
      *
      * @throws InvalidDeclarationException Never: the fields are fixed.
      */
-    private static function linkFields(array $parents, array $values, bool $create, ?string $prefix): array
+    private static function linkFields(array $parents, array $values, bool $create): array
     {
         $value = static fn(string $name): string|int|float|bool|null => $values[$name] ?? null;
 
@@ -119,7 +114,6 @@ final class ItemForm
                 default: $value('link'),
                 attributes: [
                     'create'   => $create,
-                    'prefix'   => (string) $prefix,
                     'label'    => 'label',
                     'external' => 'new_tab',
                 ],

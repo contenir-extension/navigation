@@ -68,7 +68,6 @@ final class ItemEditHandler implements HandlerInterface
             ItemChoices::parents($items, $item->id),
             $values,
             null !== $menus->records,
-            NewPage::prefix($menus->records, $under),
         );
         if ('POST' !== $request->getMethod()) {
             return self::screen($item, $form(ItemValues::of($item)));

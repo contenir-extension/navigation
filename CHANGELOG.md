@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project
 adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- A page made from an item's link starts its suggested path with its section's own prefix, not the path of the page
+  the item sits under: a page is reached at its own address wherever it sits in the page tree. It is still made under
+  that page.
+
 ## [0.3.0] - 2026-10-27
 
 Requires contenir/contenir-extension-api 0.7.4 and contenir/contenir-navigation 0.2.
