@@ -13,9 +13,12 @@ use Contenir\Extension\Api\Record\RecordStatus;
 use Contenir\Extension\Api\Record\Workflow;
 use Contenir\Extension\Api\Testing\FrozenClock;
 use Contenir\Extension\Api\Testing\InMemoryHost;
+use Contenir\Extension\Navigation\Event\MenuPostChange;
 use Contenir\Extension\Navigation\NavigationExtension;
 use Contenir\Extension\Navigation\Persistence\Menus;
 use Contenir\Extension\Navigation\Persistence\SiteDatabase;
+use Contenir\Extension\Navigation\Tests\TestAsset\Event\RecordingContext;
+use Contenir\Extension\Navigation\Tests\TestAsset\Event\RecordingEvents;
 use Contenir\Navigation\ConfigProvider;
 use Contenir\Navigation\Menu\Item;
 use Contenir\Navigation\Menu\Navigation;
@@ -42,7 +45,28 @@ trait NavigationHostTrait
 
     private InMemoryHost $host;
 
+    private RecordingEvents $announced;
+
     private Psr17Factory $http;
+
+    /**
+     * The identifiers of the menus whose changes the add-on announced reached the site, in order.
+     *
+     * @return list<string>
+     */
+    private function announcedMenus(): array
+    {
+        $handles = [];
+        foreach ($this->announced->dispatched ?? [] as $event) {
+            if (! $event instanceof MenuPostChange) {
+                continue;
+            }
+
+            $handles[] = $event->handle;
+        }
+
+        return $handles;
+    }
 
     /**
      * A handler's result for a request, as the host would answer it, run with
@@ -76,9 +100,15 @@ trait NavigationHostTrait
         );
     }
 
+    /**
+     * The add-on's context, whose events are kept in $announced on their way to the host.
+     */
     private function context(): ExtensionContextInterface
     {
-        return $this->host->context(NavigationExtension::HANDLE);
+        $context         = $this->host->context(NavigationExtension::HANDLE);
+        $this->announced ??= new RecordingEvents($context->events());
+
+        return new RecordingContext($context, $this->announced);
     }
 
     private function createHost(): void

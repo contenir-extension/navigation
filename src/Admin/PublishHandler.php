@@ -42,7 +42,7 @@ final class PublishHandler implements HandlerInterface
         $menus = Menus::of($context);
 
         try {
-            $menus->publisher->publish($id, $menus->publisher());
+            $menus->publish($id);
         } catch (NotFoundException) {
             return HandlerResult::redirect(Urls::menu(null))->withMessage('warning', 'That menu no longer exists.');
         } catch (InvalidItemException $problem) {

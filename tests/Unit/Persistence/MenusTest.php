@@ -7,7 +7,10 @@ namespace Contenir\Extension\Navigation\Tests\Unit\Persistence;
 use Contenir\Extension\Api\Editor\CurrentEditorInterface;
 use Contenir\Extension\Api\Editor\Editor;
 use Contenir\Extension\Api\Testing\FrozenClock;
+use Contenir\Extension\Navigation\Event\MenuPostChange;
 use Contenir\Extension\Navigation\Persistence\Menus;
+use Contenir\Extension\Navigation\Tests\TestAsset\Event\RecordingEvents;
+use Contenir\Navigation\Menu\Navigation;
 use Contenir\Navigation\Menu\PublishedBy;
 use Contenir\Navigation\Publishing\Publisher;
 use Contenir\Navigation\Storage\NavigationRepositoryInterface;
@@ -20,6 +23,34 @@ use PHPUnit\Framework\TestCase;
 #[Group('unit')]
 final class MenusTest extends TestCase
 {
+    #[Test]
+    public function aChangeIsAnnouncedToNoOneWithoutTheAddOnsEvents(): void
+    {
+        $this->menus(null)->changed(new Navigation('header', 'Header', id: 1, revisionId: 3));
+
+        $this->expectNotToPerformAssertions();
+    }
+
+    #[Test]
+    public function aChangeToAMenuNotYetPublishedIsNotAnnounced(): void
+    {
+        $events = new RecordingEvents();
+
+        $this->menus(null, $events)->changed(new Navigation('header', 'Header', id: 1));
+
+        static::assertSame([], $events->dispatched);
+    }
+
+    #[Test]
+    public function aLiveMenusChangeIsAnnouncedByItsIdentifier(): void
+    {
+        $events = new RecordingEvents();
+
+        $this->menus(null, $events)->changed(new Navigation('header', 'Header', id: 1, revisionId: 3));
+
+        static::assertEquals([new MenuPostChange('header')], $events->dispatched);
+    }
+
     #[Test]
     public function thePublisherIsTheEditorSignedIn(): void
     {
@@ -38,7 +69,7 @@ final class MenusTest extends TestCase
         static::assertSame([null, null], [$this->menus($editors)->publisher(), $this->menus(null)->publisher()]);
     }
 
-    private function menus(?CurrentEditorInterface $editors): Menus
+    private function menus(?CurrentEditorInterface $editors, ?RecordingEvents $events = null): Menus
     {
         $repository  = $this->createStub(NavigationRepositoryInterface::class);
         $transaction = $this->createStub(TransactionInterface::class);
@@ -48,6 +79,7 @@ final class MenusTest extends TestCase
             new Publisher($repository, $transaction, new FrozenClock(new DateTimeImmutable('2026-10-23 09:00'))),
             $transaction,
             editors: $editors,
+            events: $events,
         );
     }
 }

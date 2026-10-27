@@ -82,6 +82,7 @@ final class MenuEditHandler implements HandlerInterface
                 ->withMessage('danger', $problem->getMessage());
         }
 
+        $menus->changed($saved);
         $shared = MenuForm::shared($menus->repository, $saved->handle, $saved->id);
 
         return HandlerResult::redirect(Urls::menu($menu->id))->withMessage(

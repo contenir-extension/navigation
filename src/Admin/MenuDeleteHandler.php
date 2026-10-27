@@ -8,6 +8,7 @@ use Contenir\Extension\Api\Context\ExtensionContextInterface;
 use Contenir\Extension\Api\Handler\HandlerInterface;
 use Contenir\Extension\Api\Handler\HandlerResult;
 use Contenir\Extension\Navigation\Persistence\Menus;
+use Contenir\Navigation\Exception\NotFoundException;
 use Contenir\Navigation\Exception\StorageException;
 use LogicException;
 use Override;
@@ -35,7 +36,15 @@ final class MenuDeleteHandler implements HandlerInterface
             return HandlerResult::redirect(Urls::menu($id));
         }
 
-        Menus::of($context)->repository->deleteNavigation($id);
+        $menus = Menus::of($context);
+        try {
+            $menu = $menus->repository->navigation($id);
+        } catch (NotFoundException) {
+            return HandlerResult::redirect(Urls::menu(null))->withMessage('warning', 'That menu no longer exists.');
+        }
+
+        $menus->repository->deleteNavigation($id);
+        $menus->changed($menu);
 
         return HandlerResult::redirect(Urls::menu(null))->withMessage('success', 'Menu deleted.');
     }
