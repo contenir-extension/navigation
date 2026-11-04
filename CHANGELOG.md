@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-04
+
+Requires contenir/contenir-extension-api 0.7.4 and contenir/contenir-navigation 0.2.
+
 ### Changed
 
 - Navigation follows the site's own categories in Site Pages, so Site Pages opens on its page list. A site's admin.xml
