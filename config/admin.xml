@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Navigation is added to Site Pages after the site's own categories, so Site Pages opens on
+    its page list. A site's admin.xml can bring it forward with a lower order.
+-->
 <admin>
     <site existing="true">
         <category>
-            <navigation>
+            <navigation order="9999">
                 <title>Navigation</title>
                 <section>
                     <menus>
