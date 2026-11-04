@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Navigation follows the site's own categories in Site Pages, so Site Pages opens on its page list. A site's admin.xml
+  can bring it forward with a lower `order`. Needs a Contenir CMS that orders an area's categories; an older one keeps
+  Navigation first.
+
 ### Fixed
 
 - A page made from an item's link starts its suggested path with its section's own prefix, not the path of the page
