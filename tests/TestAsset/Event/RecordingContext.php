@@ -6,8 +6,10 @@ namespace Contenir\Extension\Navigation\Tests\TestAsset\Event;
 
 use Contenir\Extension\Api\Context\ExtensionContextInterface;
 use Contenir\Extension\Api\Handle;
+use Contenir\Extension\Api\Section\SectionsInterface;
 use Contenir\Extension\Api\Settings\SettingsInterface;
 use Contenir\Extension\Api\Url\UrlResolverInterface;
+use LogicException;
 use Override;
 use Psr\Clock\ClockInterface;
 use Psr\Container\ContainerInterface;
@@ -47,6 +49,15 @@ final readonly class RecordingContext implements ExtensionContextInterface
     public function logger(): LoggerInterface
     {
         return $this->inner->logger();
+    }
+
+    /**
+     * The API's 0.8 context method, written without #[Override] so this
+     * test context still loads against 0.7, the lowest API the add-on accepts.
+     */
+    public function sections(): SectionsInterface
+    {
+        throw new LogicException('Not offered');
     }
 
     #[Override]
